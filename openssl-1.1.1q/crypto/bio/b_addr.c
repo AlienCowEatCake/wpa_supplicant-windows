@@ -22,6 +22,25 @@
 #include <openssl/buffer.h>
 #include "internal/thread_once.h"
 
+#if defined(_WIN32) && !defined(UNICODE) && !defined(_UNICODE) && defined(__MINGW32__)
+#if !defined(GAI_STRERROR_BUFFER_SIZE)
+#define GAI_STRERROR_BUFFER_SIZE 1024
+#endif
+static char *gai_strerror_impl(int ecode)
+{
+    DWORD dwMsgLen;
+    static char buff[GAI_STRERROR_BUFFER_SIZE + 1];
+    buff[0] = '\0';
+    dwMsgLen = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK,
+        NULL, ecode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPSTR)buff, GAI_STRERROR_BUFFER_SIZE, NULL);
+    (void)dwMsgLen;
+    return buff;
+}
+#define gai_strerror gai_strerror_impl
+#endif
+
 CRYPTO_RWLOCK *bio_lookup_lock;
 static CRYPTO_ONCE bio_lookup_init = CRYPTO_ONCE_STATIC_INIT;
 

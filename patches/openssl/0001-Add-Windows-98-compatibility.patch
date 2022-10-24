@@ -1,0 +1,101 @@
+From a7eda35e75b6099e182879d688a1eec62094588c Mon Sep 17 00:00:00 2001
+From: Peter Zhigalov <peter.zhigalov@gmail.com>
+Date: Mon, 24 Oct 2022 01:00:35 +0700
+Subject: [PATCH] Add Windows 98 compatibility
+
+---
+ Configurations/10-main.conf |  5 ++---
+ crypto/bio/b_addr.c         | 19 +++++++++++++++++++
+ e_os.h                      |  9 ++++++++-
+ 3 files changed, 29 insertions(+), 4 deletions(-)
+
+diff --git a/Configurations/10-main.conf b/Configurations/10-main.conf
+index 2fcb96a047..5196579673 100644
+--- a/Configurations/10-main.conf
++++ b/Configurations/10-main.conf
+@@ -1242,7 +1242,6 @@ my %targets = (
+         LDFLAGS          => add("/debug"),
+         coutflag         => "/Fo",
+         defines          => add("OPENSSL_SYS_WIN32", "WIN32_LEAN_AND_MEAN",
+-                                "UNICODE", "_UNICODE",
+                                 "_CRT_SECURE_NO_DEPRECATE",
+                                 "_WINSOCK_DEPRECATED_NO_WARNINGS"),
+         lib_cflags       => add("/Zi /Fdossl_static.pdb"),
+@@ -1402,7 +1401,7 @@ my %targets = (
+                                    debug   => "-g -O0",
+                                    release => "-O3 -fomit-frame-pointer"),
+         cflags           => "-m32",
+-        cppflags         => combine("-DUNICODE -D_UNICODE -DWIN32_LEAN_AND_MEAN",
++        cppflags         => combine("-DWIN32_LEAN_AND_MEAN",
+                                     threads("-D_MT")),
+         lib_cppflags     => "-DL_ENDIAN",
+         sys_id           => "MINGW32",
+@@ -1438,7 +1437,7 @@ my %targets = (
+                                    debug   => "-g -O0",
+                                    release => "-O3"),
+         cflags           => "-m64",
+-        cppflags         => combine("-DUNICODE -D_UNICODE -DWIN32_LEAN_AND_MEAN",
++        cppflags         => combine("-DWIN32_LEAN_AND_MEAN",
+                                     threads("-D_MT")),
+         lib_cppflags     => "-DL_ENDIAN",
+         sys_id           => "MINGW64",
+diff --git a/crypto/bio/b_addr.c b/crypto/bio/b_addr.c
+index 0af7a330bc..cc07faa7dc 100644
+--- a/crypto/bio/b_addr.c
++++ b/crypto/bio/b_addr.c
+@@ -22,6 +22,25 @@
+ #include <openssl/buffer.h>
+ #include "internal/thread_once.h"
+ 
++#if defined(_WIN32) && !defined(UNICODE) && !defined(_UNICODE) && defined(__MINGW32__)
++#if !defined(GAI_STRERROR_BUFFER_SIZE)
++#define GAI_STRERROR_BUFFER_SIZE 1024
++#endif
++static char *gai_strerror_impl(int ecode)
++{
++    DWORD dwMsgLen;
++    static char buff[GAI_STRERROR_BUFFER_SIZE + 1];
++    buff[0] = '\0';
++    dwMsgLen = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
++        FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK,
++        NULL, ecode, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
++        (LPSTR)buff, GAI_STRERROR_BUFFER_SIZE, NULL);
++    (void)dwMsgLen;
++    return buff;
++}
++#define gai_strerror gai_strerror_impl
++#endif
++
+ CRYPTO_RWLOCK *bio_lookup_lock;
+ static CRYPTO_ONCE bio_lookup_init = CRYPTO_ONCE_STATIC_INIT;
+ 
+diff --git a/e_os.h b/e_os.h
+index 9af7f3758d..a4f18d7c82 100644
+--- a/e_os.h
++++ b/e_os.h
+@@ -142,7 +142,11 @@
+         * might be possible to achieve the goal by /DELAYLOAD-ing .DLLs
+         * and check for current OS version instead.
+         */
+-#    define _WIN32_WINNT 0x0501
++#    if defined(UNICODE) && defined(_UNICODE)
++#     define _WIN32_WINNT 0x0501
++#    else
++#     define _WIN32_WINNT 0x0400
++#    endif
+ #   endif
+ #   if defined(_WIN32_WINNT) || defined(_WIN32_WCE)
+        /*
+@@ -154,6 +158,9 @@
+         */
+ #    include <winsock2.h>
+ #    include <ws2tcpip.h>
++#    if defined(_WIN32_WINNT) && (_WIN32_WINNT < 0x0501) && !defined(__MINGW32__)
++#     include <wspiapi.h>
++#    endif
+        /* yes, they have to be #included prior to <windows.h> */
+ #   endif
+ #   include <windows.h>
+-- 
+2.30.2
+

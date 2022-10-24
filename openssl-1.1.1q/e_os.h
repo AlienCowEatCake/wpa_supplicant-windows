@@ -142,7 +142,11 @@
         * might be possible to achieve the goal by /DELAYLOAD-ing .DLLs
         * and check for current OS version instead.
         */
-#    define _WIN32_WINNT 0x0501
+#    if defined(UNICODE) && defined(_UNICODE)
+#     define _WIN32_WINNT 0x0501
+#    else
+#     define _WIN32_WINNT 0x0400
+#    endif
 #   endif
 #   if defined(_WIN32_WINNT) || defined(_WIN32_WCE)
        /*
@@ -154,6 +158,9 @@
         */
 #    include <winsock2.h>
 #    include <ws2tcpip.h>
+#    if defined(_WIN32_WINNT) && (_WIN32_WINNT < 0x0501) && !defined(__MINGW32__)
+#     include <wspiapi.h>
+#    endif
        /* yes, they have to be #included prior to <windows.h> */
 #   endif
 #   include <windows.h>
