@@ -15,6 +15,11 @@
 #include "stringquery.h"
 #include "peers.h"
 
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+#undef snprintf
+#define snprintf _snprintf
+#endif
+
 
 enum {
 	peer_role_address = Qt::UserRole + 1,

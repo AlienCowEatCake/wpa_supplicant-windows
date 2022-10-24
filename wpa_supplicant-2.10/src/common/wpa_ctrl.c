@@ -458,7 +458,7 @@ struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_path)
 char * wpa_ctrl_get_remote_ifname(struct wpa_ctrl *ctrl)
 {
 #define WPA_CTRL_MAX_PS_NAME 100
-	static char ps[WPA_CTRL_MAX_PS_NAME] = {};
+	static char ps[WPA_CTRL_MAX_PS_NAME] = {'\0'};
 	os_snprintf(ps, WPA_CTRL_MAX_PS_NAME, "%s/%s",
 		    ctrl->remote_ip, ctrl->remote_ifname);
 	return ps;

@@ -16,7 +16,7 @@
 #include <ntddndis.h>
 #else /* CONFIG_USE_NDISUIO */
 #include "pcap.h"
-#include <winsock.h>
+#include <winsock2.h>
 #endif /* CONFIG_USE_NDISUIO */
 
 #ifdef CONFIG_USE_NDISUIO

@@ -14,6 +14,11 @@
 #include "networkconfig.h"
 #include "scanresultsitem.h"
 
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+#undef snprintf
+#define snprintf _snprintf
+#endif
+
 
 ScanResults::ScanResults(QWidget *parent, const char *, bool, Qt::WindowFlags)
 	: QDialog(parent)

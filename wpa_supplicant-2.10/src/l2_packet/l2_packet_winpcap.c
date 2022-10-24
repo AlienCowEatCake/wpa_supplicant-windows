@@ -348,3 +348,9 @@ void l2_packet_notify_auth_start(struct l2_packet_data *l2)
 	if (l2)
 		SetEvent(l2->rx_notify);
 }
+
+int l2_packet_set_packet_filter(struct l2_packet_data *l2,
+				enum l2_packet_filter_type type)
+{
+	return -1;
+}

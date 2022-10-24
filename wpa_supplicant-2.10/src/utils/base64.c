@@ -7,7 +7,9 @@
  */
 
 #include "includes.h"
+#if !defined(_MSC_VER) || (_MSC_VER >= 1600)
 #include <stdint.h>
+#endif
 
 #include "utils/common.h"
 #include "os.h"

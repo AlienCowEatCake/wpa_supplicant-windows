@@ -8,22 +8,21 @@ CONFIG	+= qt warn_on release
 DEFINES += CONFIG_CTRL_IFACE
 
 win32 {
-  LIBS += -lws2_32 -static
-  DEFINES += CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
+  LIBS += -lws2_32 -lcrypt32 -lgdi32 -ladvapi32 -luser32 -static
+  DEFINES += NOMINMAX CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
   SOURCES += ../../src/utils/os_win32.c
+  RC_FILE = wpa_gui.rc
 } else:win32-g++ {
   # cross compilation to win32
-  LIBS += -lws2_32 -static -mwindows
-  DEFINES += CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
+  LIBS += -lws2_32 -lcrypt32 -lgdi32 -ladvapi32 -luser32 -static -mwindows
+  DEFINES += NOMINMAX CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
   SOURCES += ../../src/utils/os_win32.c
-  RESOURCES += icons_png.qrc
 } else:win32-x-g++ {
   # cross compilation to win32
-  LIBS += -lws2_32 -static -mwindows
-  DEFINES += CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
+  LIBS += -lws2_32 -lcrypt32 -lgdi32 -ladvapi32 -luser32 -static -mwindows
+  DEFINES += NOMINMAX CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
   DEFINES += _X86_
   SOURCES += ../../src/utils/os_win32.c
-  RESOURCES += icons_png.qrc
 } else {
   DEFINES += CONFIG_CTRL_IFACE_UNIX
   SOURCES += ../../src/utils/os_unix.c
@@ -56,7 +55,7 @@ SOURCES	+= main.cpp \
 	stringquery.cpp \
 	../../src/common/wpa_ctrl.c
 
-RESOURCES += icons.qrc
+RESOURCES += icons.qrc icons_png.qrc icons_status.qrc
 
 FORMS	= wpagui.ui \
 	eventhistory.ui \

@@ -14,6 +14,11 @@
 #include "wpagui.h"
 #include "addinterface.h"
 
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+#undef snprintf
+#define snprintf _snprintf
+#endif
+
 #ifdef CONFIG_NATIVE_WINDOWS
 #include <windows.h>
 
@@ -148,7 +153,7 @@ bool AddInterface::addRegistryInterface(const QString &ifname)
 #ifdef UNICODE
 	wsprintf(name, L"%04d", id);
 #else /* UNICODE */
-	os_snprintf(name, sizeof(name), "%04d", id);
+	snprintf(name, sizeof(name), "%04d", id);
 #endif /* UNICODE */
 	ret = RegCreateKeyEx(hk, name, 0, NULL, 0, KEY_WRITE, NULL, &ihk,
 			     NULL);
@@ -163,7 +168,7 @@ bool AddInterface::addRegistryInterface(const QString &ifname)
 
 #else /* UNICODE */
 	RegSetValueEx(ihk, TEXT("adapter"), 0, REG_SZ,
-		      (LPBYTE) ifname.toLocal8Bit(), ifname.length() + 1);
+		      (LPBYTE) ifname.toLocal8Bit().constData(), ifname.length() + 1);
 #endif /* UNICODE */
 	RegSetValueEx(ihk, TEXT("config"), 0, REG_SZ,
 		      (LPBYTE) TEXT("default"), 8 * sizeof(TCHAR));

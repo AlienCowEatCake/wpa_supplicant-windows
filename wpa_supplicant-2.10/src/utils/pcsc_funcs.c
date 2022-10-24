@@ -123,7 +123,8 @@ struct scard_data {
 	int pin1_required;
 };
 
-#ifdef __MINGW32_VERSION
+/*#ifdef __MINGW32_VERSION*/
+#if 1
 /* MinGW does not yet support WinScard, so load the needed functions
  * dynamically from winscard.dll for now. */
 
@@ -136,8 +137,8 @@ static const SCARD_IO_REQUEST *dll_g_rgSCardT0Pci, *dll_g_rgSCardT1Pci;
 #define SCARD_PCI_T1 (dll_g_rgSCardT1Pci)
 
 
-static WINSCARDAPI LONG WINAPI
-(*dll_SCardEstablishContext)(IN DWORD dwScope,
+static WINSCARDAPI LONG
+(WINAPI *dll_SCardEstablishContext)(IN DWORD dwScope,
 			     IN LPCVOID pvReserved1,
 			     IN LPCVOID pvReserved2,
 			     OUT LPSCARDCONTEXT phContext);
@@ -146,16 +147,16 @@ static WINSCARDAPI LONG WINAPI
 static long (*dll_SCardReleaseContext)(long hContext);
 #define SCardReleaseContext dll_SCardReleaseContext
 
-static WINSCARDAPI LONG WINAPI
-(*dll_SCardListReadersA)(IN SCARDCONTEXT hContext,
+static WINSCARDAPI LONG
+(WINAPI *dll_SCardListReadersA)(IN SCARDCONTEXT hContext,
 			 IN LPCSTR mszGroups,
 			 OUT LPSTR mszReaders,
 			 IN OUT LPDWORD pcchReaders);
 #undef SCardListReaders
 #define SCardListReaders dll_SCardListReadersA
 
-static WINSCARDAPI LONG WINAPI
-(*dll_SCardConnectA)(IN SCARDCONTEXT hContext,
+static WINSCARDAPI LONG
+(WINAPI *dll_SCardConnectA)(IN SCARDCONTEXT hContext,
 		     IN LPCSTR szReader,
 		     IN DWORD dwShareMode,
 		     IN DWORD dwPreferredProtocols,
@@ -164,13 +165,13 @@ static WINSCARDAPI LONG WINAPI
 #undef SCardConnect
 #define SCardConnect dll_SCardConnectA
 
-static WINSCARDAPI LONG WINAPI
-(*dll_SCardDisconnect)(IN SCARDHANDLE hCard,
+static WINSCARDAPI LONG
+(WINAPI *dll_SCardDisconnect)(IN SCARDHANDLE hCard,
 		       IN DWORD dwDisposition);
 #define SCardDisconnect dll_SCardDisconnect
 
-static WINSCARDAPI LONG WINAPI
-(*dll_SCardTransmit)(IN SCARDHANDLE hCard,
+static WINSCARDAPI LONG
+(WINAPI *dll_SCardTransmit)(IN SCARDHANDLE hCard,
 		     IN LPCSCARD_IO_REQUEST pioSendPci,
 		     IN LPCBYTE pbSendBuffer,
 		     IN DWORD cbSendLength,
@@ -179,12 +180,12 @@ static WINSCARDAPI LONG WINAPI
 		     IN OUT LPDWORD pcbRecvLength);
 #define SCardTransmit dll_SCardTransmit
 
-static WINSCARDAPI LONG WINAPI
-(*dll_SCardBeginTransaction)(IN SCARDHANDLE hCard);
+static WINSCARDAPI LONG
+(WINAPI *dll_SCardBeginTransaction)(IN SCARDHANDLE hCard);
 #define SCardBeginTransaction dll_SCardBeginTransaction
 
-static WINSCARDAPI LONG WINAPI
-(*dll_SCardEndTransaction)(IN SCARDHANDLE hCard, IN DWORD dwDisposition);
+static WINSCARDAPI LONG
+(WINAPI *dll_SCardEndTransaction)(IN SCARDHANDLE hCard, IN DWORD dwDisposition);
 #define SCardEndTransaction dll_SCardEndTransaction
 
 

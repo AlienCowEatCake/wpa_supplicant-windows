@@ -154,7 +154,11 @@ void wpa_hexdump_ascii_key(int level, const char *title, const void *buf,
  * needed in the control interface while wpa_msg() has to be used for anything
  * that needs to shown to control interface monitors.
  */
+#if defined(_MSC_VER)
+#define wpa_dbg(args, ...)  wpa_msg(args, __VA_ARGS__)
+#else
 #define wpa_dbg(args...) wpa_msg(args)
+#endif
 
 #endif /* CONFIG_NO_STDOUT_DEBUG */
 

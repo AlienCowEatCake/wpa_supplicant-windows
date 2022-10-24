@@ -1253,10 +1253,10 @@ static int wpa_supplicant_ctrl_iface_tdls_link_status(
 static int wmm_ac_ctrl_addts(struct wpa_supplicant *wpa_s, char *cmd)
 {
 	char *token, *context = NULL;
-	struct wmm_ac_ts_setup_params params = {
-		.tsid = 0xff,
-		.direction = 0xff,
-	};
+	struct wmm_ac_ts_setup_params params;
+	os_memset(&params, 0, sizeof(params));
+	params.tsid = 0xff;
+	params.direction = 0xff;
 
 	while ((token = str_token(cmd, " ", &context))) {
 		if (sscanf(token, "tsid=%i", &params.tsid) == 1 ||
@@ -8210,9 +8210,9 @@ static int wpas_ctrl_iface_driver_flags(struct wpa_supplicant *wpa_s,
 	end = buf + buflen;
 
 	for (i = 0; i < 64; i++) {
-		if (wpa_s->drv_flags & (1LLU << i)) {
+		if (wpa_s->drv_flags & (((unsigned long long)1) << i)) {
 			ret = os_snprintf(pos, end - pos, "%s\n",
-					  driver_flag_to_string(1LLU << i));
+					  driver_flag_to_string(((unsigned long long)1) << i));
 			if (os_snprintf_error(end - pos, ret))
 				return -1;
 			pos += ret;
@@ -8238,9 +8238,9 @@ static int wpas_ctrl_iface_driver_flags2(struct wpa_supplicant *wpa_s,
 	end = buf + buflen;
 
 	for (i = 0; i < 64; i++) {
-		if (wpa_s->drv_flags2 & (1LLU << i)) {
+		if (wpa_s->drv_flags2 & (((unsigned long long)1) << i)) {
 			ret = os_snprintf(pos, end - pos, "%s\n",
-					  driver_flag2_to_string(1LLU << i));
+					  driver_flag2_to_string(((unsigned long long)1) << i));
 			if (os_snprintf_error(end - pos, ret))
 				return -1;
 			pos += ret;

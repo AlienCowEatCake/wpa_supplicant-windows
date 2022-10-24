@@ -11,19 +11,29 @@
 #endif /* CONFIG_NATIVE_WINDOWS */
 
 #include <cstdio>
-#include <unistd.h>
-#include <chrono>
-#include <thread>
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QImageReader>
 #include <QSettings>
+#include <QThread>
+#include <QDir>
+#include <QFileInfo>
+#include <QDebug>
+#include <QMap>
 
 #include "wpagui.h"
+#ifdef CONFIG_CTRL_IFACE_UNIX
 #include "dirent.h"
+#endif
 #include "common/wpa_ctrl.h"
 #include "userdatarequest.h"
 #include "networkconfig.h"
+
+
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+#undef snprintf
+#define snprintf _snprintf
+#endif
 
 
 #ifndef QT_NO_DEBUG
@@ -31,6 +41,17 @@
 #else
 #define debug(M, ...) do {} while (0)
 #endif
+
+
+namespace {
+
+class ThreadSleep: public QThread
+{
+public:
+	static void msleep(int ms) { QThread::msleep(ms); }
+};
+
+}
 
 
 WpaGui::WpaGui(QApplication *_app, QWidget *parent, const char *,
@@ -240,23 +261,43 @@ void WpaGui::languageChange()
 
 void WpaGui::parse_argv()
 {
-	int c;
-	WpaGuiApp *app = qobject_cast<WpaGuiApp*>(qApp);
-	for (;;) {
-		c = getopt(app->argc, app->argv, "i:m:p:tq");
-		if (c < 0)
-			break;
+	const QStringList originalArgs = qApp->arguments();
+	QMap<char, QString> args;
+	for (QStringList::ConstIterator it = originalArgs.constBegin() + 1; it != originalArgs.constEnd(); ++it) {
+		QString::ConstIterator cit = it->constBegin();
+		char c = cit->toLatin1();
+		if (c != '-' && c != '/') {
+			qWarning() << "Invalid argument" << (*it);
+			continue;
+		}
+		for (++cit; cit != it->constEnd() && cit->toLatin1() != '\0'; ++cit) {
+			c = cit->toLatin1();
+			if (c == 'i' || c == 'm' || c == 'p') {
+				if (it + 1 == originalArgs.constEnd() || !(cit + 1 == it->constEnd() || (cit + 1)->toLatin1() == '\0')) {
+					qWarning() << "No option for switch " << c << "from" << (*it);
+					continue;
+				}
+				++it;
+				args.insert(c, *it);
+			} else {
+				args.insert(c, QString());
+			}
+		}
+	}
+	for (QMap<char, QString>::ConstIterator it = args.constBegin() + 1; it != args.constEnd(); ++it) {
+		const char c = it.key();
+		const QString optarg = it.value();
 		switch (c) {
 		case 'i':
 			free(ctrl_iface);
-			ctrl_iface = strdup(optarg);
+			ctrl_iface = strdup(optarg.toLocal8Bit().data());
 			break;
 		case 'm':
-			signalMeterInterval = atoi(optarg) * 1000;
+			signalMeterInterval = atoi(optarg.toLocal8Bit().data()) * 1000;
 			break;
 		case 'p':
 			free(ctrl_iface_dir);
-			ctrl_iface_dir = strdup(optarg);
+			ctrl_iface_dir = strdup(optarg.toLocal8Bit().data());
 			break;
 		case 't':
 			startInTray = true;
@@ -720,7 +761,7 @@ void WpaGui::updateNetworks()
 			continue;
 
 		/* avoid race conditions */
-		std::this_thread::sleep_for(std::chrono::milliseconds(200));
+		ThreadSleep::msleep(200);
 		QString cmd("LIST_NETWORKS LAST_ID=");
 		cmd.append(id);
 		if (ctrlRequest(cmd.toLocal8Bit().constData(), buf, &len) < 0)
@@ -1375,6 +1416,7 @@ void WpaGui::createTrayIcon(bool trayOnly)
 	QApplication::setQuitOnLastWindowClosed(false);
 
 	tray_icon = new QSystemTrayIcon(this);
+	currentIconType = TrayIconConnected;
 	updateTrayIcon(TrayIconOffline);
 
 	connect(tray_icon,
@@ -1577,7 +1619,21 @@ QIcon WpaGui::loadThemedIcon(const QStringList &names,
 
 	for (QStringList::ConstIterator it = names.begin();
 	     it != names.end(); it++) {
+#if QT_VERSION > 0x040600
 		icon = QIcon::fromTheme(*it);
+#else
+		if (QDir::isAbsolutePath(*it) && QFileInfo(*it).exists())
+			icon = QIcon(*it);
+#endif
+		if (!icon.isNull())
+			return icon;
+	}
+
+	for (QStringList::ConstIterator it = names.begin();
+	     it != names.end(); it++) {
+		const QString path = QString::fromLatin1(":/icons/status/%1.png").arg(*it);
+		if (QFileInfo(path).exists())
+			icon = QIcon(path);
 		if (!icon.isNull())
 			return icon;
 	}
@@ -1790,7 +1846,11 @@ void ErrorMsg::showMsg(QString msg)
 			  FORMAT_MESSAGE_FROM_SYSTEM,
 			  NULL, err, 0, (LPTSTR) (void *) &buf,
 			  0, NULL) > 0) {
+#ifdef UNICODE
 		QString msg = QString::fromWCharArray(buf);
+#else
+        QString msg = QString::fromLocal8Bit(buf);
+#endif
 		setInformativeText(QString("[%1] %2").arg(err).arg(msg));
 		LocalFree(buf);
 	} else {

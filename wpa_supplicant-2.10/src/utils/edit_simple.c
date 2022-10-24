@@ -60,6 +60,12 @@ static void edit_read_char(int sock, void *eloop_ctx, void *sock_ctx)
 	}
 }
 
+#ifdef CONFIG_NATIVE_WINDOWS
+static void edit_read_char_event_cb(void *eloop_ctx, void *sock_ctx)
+{
+	edit_read_char(STDIN_FILENO, eloop_ctx, sock_ctx);
+}
+#endif
 
 int edit_init(void (*cmd_cb)(void *ctx, char *cmd),
 	      void (*eof_cb)(void *ctx),
@@ -69,7 +75,11 @@ int edit_init(void (*cmd_cb)(void *ctx, char *cmd),
 	edit_cb_ctx = ctx;
 	edit_cmd_cb = cmd_cb;
 	edit_eof_cb = eof_cb;
+#ifdef CONFIG_NATIVE_WINDOWS
+	eloop_register_event(GetStdHandle(STD_INPUT_HANDLE), sizeof(HANDLE), edit_read_char_event_cb, NULL, NULL);
+#else
 	eloop_register_read_sock(STDIN_FILENO, edit_read_char, NULL, NULL);
+#endif
 	ps2 = ps;
 
 	printf("%s> ", ps2 ? ps2 : "");
@@ -82,7 +92,11 @@ int edit_init(void (*cmd_cb)(void *ctx, char *cmd),
 void edit_deinit(const char *history_file,
 		 int (*filter_cb)(void *ctx, const char *cmd))
 {
+#ifdef CONFIG_NATIVE_WINDOWS
+	eloop_unregister_event(GetStdHandle(STD_INPUT_HANDLE), sizeof(HANDLE));
+#else
 	eloop_unregister_read_sock(STDIN_FILENO);
+#endif
 }
 
 

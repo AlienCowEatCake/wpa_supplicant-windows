@@ -4340,12 +4340,12 @@ static void wpa_cli_action_process(const char *msg)
 }
 
 
-#ifndef CONFIG_ANSI_C_EXTRA
+/*#ifndef CONFIG_ANSI_C_EXTRA*/
 static void wpa_cli_action_cb(char *msg, size_t len)
 {
 	wpa_cli_action_process(msg);
 }
-#endif /* CONFIG_ANSI_C_EXTRA */
+/*#endif*/ /* CONFIG_ANSI_C_EXTRA */
 
 
 static int wpa_cli_open_global_ctrl(void)

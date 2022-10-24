@@ -1,0 +1,9 @@
+<RCC>
+ <qresource prefix="/icons/status" >
+  <file alias="network-wireless-signal-none.png">icons/status/nm-signal-00.png</file>
+  <file alias="network-wireless-signal-weak.png">icons/status/nm-signal-25.png</file>
+  <file alias="network-wireless-signal-ok.png">icons/status/nm-signal-50.png</file>
+  <file alias="network-wireless-signal-good.png">icons/status/nm-signal-75.png</file>
+  <file alias="network-wireless-signal-excellent.png">icons/status/nm-signal-100.png</file>
+ </qresource>
+</RCC>

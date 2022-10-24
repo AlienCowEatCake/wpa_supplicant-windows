@@ -349,7 +349,8 @@ static X509_STORE * tls_crl_cert_reload(const char *ca_cert, int check_crl)
 }
 
 
-#ifdef CONFIG_NATIVE_WINDOWS
+/*#ifdef CONFIG_NATIVE_WINDOWS*/
+#if 0
 
 /* Windows CryptoAPI and access to certificate stores */
 #include <wincrypt.h>
@@ -2794,7 +2795,8 @@ static int tls_connection_ca_cert(struct tls_data *data,
 	}
 #endif /* ANDROID */
 
-#ifdef CONFIG_NATIVE_WINDOWS
+/*#ifdef CONFIG_NATIVE_WINDOWS*/
+#if 0
 	if (ca_cert && tls_cryptoapi_ca_cert(ssl_ctx, conn->ssl, ca_cert) ==
 	    0) {
 		wpa_printf(MSG_DEBUG, "OpenSSL: Added CA certificates from "

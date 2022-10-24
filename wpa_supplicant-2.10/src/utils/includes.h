@@ -18,7 +18,15 @@
 
 #include <stdlib.h>
 #include <stddef.h>
+#if defined(_MSC_VER) && (_MSC_VER < 1800)
+#ifndef __cplusplus
+typedef int bool;
+#define true 1
+#define false 0
+#endif
+#else
 #include <stdbool.h>
+#endif
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -41,6 +49,52 @@
 #include <sys/uio.h>
 #include <sys/time.h>
 #endif /* __vxworks */
+#else
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#ifndef __MINGW32_VERSION
+#include <wspiapi.h>
+#endif
+#include <windows.h>
+
+#include "common.h"
+
+#if defined(_MSC_VER) && (_MSC_VER < 1800)
+static int isblank_impl(int c) { return (c==' ' || c=='\t'); }
+#define isblank isblank_impl
+#endif
+
+#if defined(_MSC_VER) && !defined(STDIN_FILENO)
+#define STDIN_FILENO _fileno(stdin)
+#endif
+
+#include <errno.h>
+#ifndef EOPNOTSUPP
+#define EOPNOTSUPP ENOSYS
+#endif
+#ifndef EAFNOSUPPORT
+#define EAFNOSUPPORT ENOSYS
+#endif
+#ifndef EWOULDBLOCK
+#define EWOULDBLOCK EAGAIN
+#endif
+
+#include <assert.h>
+#include "inet_pton.h"
+#include "inet_ntop.h"
+#define inet_pton inet_pton_impl
+#define inet_ntop inet_ntop_impl
+
+#if defined(_MSC_VER) && !defined(S_IRUSR)
+#define S_IRUSR _S_IREAD
+#endif
+#if defined(_MSC_VER) && !defined(S_IWUSR)
+#define S_IWUSR _S_IWRITE
+#endif
+#if defined(_WIN32) && !defined(S_IRGRP)
+#define S_IRGRP _S_IREAD
+#endif
+
 #endif /* CONFIG_NATIVE_WINDOWS */
 
 #endif /* INCLUDES_H */

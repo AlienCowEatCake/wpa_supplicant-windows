@@ -9,6 +9,10 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#ifdef _MSC_VER
+#define inline __inline
+#endif
+
 #include "os.h"
 
 #if defined(__linux__) || defined(__GLIBC__)
@@ -63,7 +67,7 @@ static inline unsigned int bswap_32(unsigned int v)
 #endif /* __rtems__ */
 
 #ifdef CONFIG_NATIVE_WINDOWS
-#include <winsock.h>
+#include <winsock2.h>
 
 typedef int socklen_t;
 
@@ -74,10 +78,13 @@ typedef int socklen_t;
 #endif /* CONFIG_NATIVE_WINDOWS */
 
 #ifdef _MSC_VER
-#define inline __inline
-
+#include <io.h>
+#if _MSC_VER < 1900
+#undef snprintf
+#define snprintf _snprintf
 #undef vsnprintf
 #define vsnprintf _vsnprintf
+#endif
 #undef close
 #define close closesocket
 #endif /* _MSC_VER */
@@ -390,7 +397,11 @@ typedef int socklen_t;
 #endif
 
 #ifndef __func__
+#ifndef __FUNCTION__
 #define __func__ "__func__ not defined"
+#else
+#define __func__ __FUNCTION__
+#endif
 #endif
 
 #ifndef bswap_16
