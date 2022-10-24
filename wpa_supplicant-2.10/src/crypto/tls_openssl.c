@@ -1040,6 +1040,13 @@ void * tls_init(const struct tls_config *conf)
 		os_free(data);
 		return NULL;
 	}
+
+#ifndef EAP_SERVER_TLS
+	/* Enable TLSv1.0 by default to allow connecting to legacy
+	 * networks since Debian OpenSSL is set to minimum TLSv1.2 and SECLEVEL=2. */
+	SSL_CTX_set_min_proto_version(ssl, TLS1_VERSION);
+#endif
+
 	data->ssl = ssl;
 	if (conf) {
 		data->tls_session_lifetime = conf->tls_session_lifetime;
@@ -1048,6 +1055,16 @@ void * tls_init(const struct tls_config *conf)
 
 	SSL_CTX_set_options(ssl, SSL_OP_NO_SSLv2);
 	SSL_CTX_set_options(ssl, SSL_OP_NO_SSLv3);
+
+	/* Many enterprise PEAP server implementations (e.g. used in large
+	 corporations and universities) do not support RFC5746 secure
+	 renegotiation, and starting with OpenSSL 3.0,
+	 SSL_OP_LEGACY_SERVER_CONNECT is no longer set as part of SSL_OP_ALL.
+	 So until we implement a way to request SSL_OP_LEGACY_SERVER_CONNECT
+	 only in EAP peer mode, just set SSL_OP_LEGACY_SERVER_CONNECT
+	 globally. */
+
+	SSL_CTX_set_options(ssl, SSL_OP_LEGACY_SERVER_CONNECT);
 
 	SSL_CTX_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 

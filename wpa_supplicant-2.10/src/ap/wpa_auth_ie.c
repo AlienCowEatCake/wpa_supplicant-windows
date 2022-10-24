@@ -228,11 +228,13 @@ int wpa_write_rsn_ie(struct wpa_auth_config *conf, u8 *buf, size_t len,
 		pos += RSN_SELECTOR_LEN;
 		num_suites++;
 	}
+#ifdef CONFIG_IEEE80211R_AP
 	if (conf->wpa_key_mgmt & WPA_KEY_MGMT_FT_SAE) {
 		RSN_SELECTOR_PUT(pos, RSN_AUTH_KEY_MGMT_FT_SAE);
 		pos += RSN_SELECTOR_LEN;
 		num_suites++;
 	}
+#endif /* CONFIG_IEEE80211R_AP */
 #endif /* CONFIG_SAE */
 	if (conf->wpa_key_mgmt & WPA_KEY_MGMT_IEEE8021X_SUITE_B) {
 		RSN_SELECTOR_PUT(pos, RSN_AUTH_KEY_MGMT_802_1X_SUITE_B);
@@ -670,8 +672,10 @@ wpa_validate_wpa_ie(struct wpa_authenticator *wpa_auth,
 #ifdef CONFIG_SAE
 		else if (data.key_mgmt & WPA_KEY_MGMT_SAE)
 			selector = RSN_AUTH_KEY_MGMT_SAE;
+#ifdef CONFIG_IEEE80211R_AP
 		else if (data.key_mgmt & WPA_KEY_MGMT_FT_SAE)
 			selector = RSN_AUTH_KEY_MGMT_FT_SAE;
+#endif /* CONFIG_IEEE80211R_AP */
 #endif /* CONFIG_SAE */
 		else if (data.key_mgmt & WPA_KEY_MGMT_IEEE8021X)
 			selector = RSN_AUTH_KEY_MGMT_UNSPEC_802_1X;
@@ -778,8 +782,10 @@ wpa_validate_wpa_ie(struct wpa_authenticator *wpa_auth,
 #ifdef CONFIG_SAE
 	else if (key_mgmt & WPA_KEY_MGMT_SAE)
 		sm->wpa_key_mgmt = WPA_KEY_MGMT_SAE;
+#ifdef CONFIG_IEEE80211R_AP
 	else if (key_mgmt & WPA_KEY_MGMT_FT_SAE)
 		sm->wpa_key_mgmt = WPA_KEY_MGMT_FT_SAE;
+#endif /* CONFIG_IEEE80211R_AP */
 #endif /* CONFIG_SAE */
 	else if (key_mgmt & WPA_KEY_MGMT_IEEE8021X)
 		sm->wpa_key_mgmt = WPA_KEY_MGMT_IEEE8021X;
