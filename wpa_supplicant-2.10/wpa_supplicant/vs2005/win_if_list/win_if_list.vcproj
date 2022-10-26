@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\src\utils;C:\dev\WpdPack\include"
+				AdditionalIncludeDirectories="..\..\..\src\utils;..\..\..\..\WpdPack\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -49,6 +49,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4244"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -63,7 +64,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="wpcap.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="C:\dev\WpdPack\lib"
+				AdditionalLibraryDirectories="..\..\..\..\WpdPack\lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -118,13 +119,14 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\src\utils;C:\dev\WpdPack\include"
+				AdditionalIncludeDirectories="..\..\..\src\utils;..\..\..\..\WpdPack\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4244"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -139,7 +141,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="wpcap.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="C:\dev\WpdPack\lib"
+				AdditionalLibraryDirectories="..\..\..\..\WpdPack\lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"

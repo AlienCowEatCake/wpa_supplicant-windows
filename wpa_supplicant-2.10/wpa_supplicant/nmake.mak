@@ -9,7 +9,8 @@ all: wpa_supplicant.exe wpa_cli.exe wpa_passphrase.exe wpasvc.exe win_if_list.ex
 
 # Root directory for WinPcap developer's pack
 # (http://www.winpcap.org/install/bin/WpdPack_3_1.zip)
-WINPCAPDIR=C:\dev\WpdPack
+#WINPCAPDIR=C:\dev\WpdPack
+WINPCAPDIR=..\..\WpdPack
 
 # Root directory for OpenSSL
 # (http://www.openssl.org/source/openssl-0.9.8a.tar.gz)
@@ -18,7 +19,8 @@ WINPCAPDIR=C:\dev\WpdPack
 # support it (openssl-tls-extensions.patch)
 # Alternatively, see README-Windows.txt for information about binary
 # installation package for OpenSSL.
-OPENSSLDIR=C:\dev\openssl
+#OPENSSLDIR=C:\dev\openssl
+OPENSSLDIR=..\..\openssl-1.1.1-x86
 
 CC = cl
 OBJDIR = objs
@@ -40,18 +42,23 @@ CFLAGS = $(CFLAGS) /DEAP_SIM
 CFLAGS = $(CFLAGS) /DEAP_LEAP
 CFLAGS = $(CFLAGS) /DEAP_PSK
 CFLAGS = $(CFLAGS) /DEAP_AKA
-#CFLAGS = $(CFLAGS) /DEAP_FAST
+CFLAGS = $(CFLAGS) /DEAP_FAST
 CFLAGS = $(CFLAGS) /DEAP_PAX
 CFLAGS = $(CFLAGS) /DEAP_TNC
 CFLAGS = $(CFLAGS) /DPCSC_FUNCS
 CFLAGS = $(CFLAGS) /DCONFIG_CTRL_IFACE
 CFLAGS = $(CFLAGS) /DCONFIG_CTRL_IFACE_NAMED_PIPE
 CFLAGS = $(CFLAGS) /DCONFIG_DRIVER_NDIS
+CFLAGS = $(CFLAGS) /DEAP_TLS_OPENSSL
+CFLAGS = $(CFLAGS) /DCONFIG_SHA256
+CFLAGS = $(CFLAGS) /DCONFIG_NO_SOCKLEN_T_TYPEDEF
+CFLAGS = $(CFLAGS) /DTLS_DEFAULT_CIPHERS=\"DEFAULT:!EXP:!LOW\"
 CFLAGS = $(CFLAGS) /I..\src /I..\src\utils
 CFLAGS = $(CFLAGS) /I.
 CFLAGS = $(CFLAGS) /DWIN32
 CFLAGS = $(CFLAGS) /Fo$(OBJDIR)\\ /c
 CFLAGS = $(CFLAGS) /W3
+CFLAGS = $(CFLAGS) /wd4244 /wd4267 /wd4311 /wd4996
 
 #CFLAGS = $(CFLAGS) /WX
 
@@ -60,19 +67,36 @@ CFLAGS = $(CFLAGS) /W3
 CFLAGS = $(CFLAGS) /D_CRT_SECURE_NO_DEPRECATE
 
 OBJS = \
+	$(OBJDIR)\config___wpasup.obj \
+	$(OBJDIR)\config___utils.obj \
+	$(OBJDIR)\op_classes.obj \
+	$(OBJDIR)\random.obj \
+	$(OBJDIR)\robust_av.obj \
+	$(OBJDIR)\rrm.obj \
+	$(OBJDIR)\sha256-prf.obj \
+	$(OBJDIR)\sha256-tlsprf.obj \
+	$(OBJDIR)\tls_openssl_ocsp.obj \
+	$(OBJDIR)\twt.obj \
+	$(OBJDIR)\wmm_ac.obj \
+	$(OBJDIR)\hw_features_common.obj \
+	$(OBJDIR)\ieee802_11_common.obj \
+	$(OBJDIR)\ip_addr.obj \
+	$(OBJDIR)\eap_fast.obj \
+	$(OBJDIR)\eap_fast_common.obj \
+	$(OBJDIR)\eap_fast_pac.obj \
+	$(OBJDIR)\crc32.obj \
+	$(OBJDIR)\driver_common.obj \
+	$(OBJDIR)\bitfield.obj \
+	$(OBJDIR)\bss.obj \
+	$(OBJDIR)\sha1-prf.obj \
+	$(OBJDIR)\sha1-tprf.obj \
 	$(OBJDIR)\os_win32.obj \
 	$(OBJDIR)\eloop_win.obj \
-	$(OBJDIR)\sha1.obj \
 	$(OBJDIR)\sha1-tlsprf.obj \
-	$(OBJDIR)\sha1-pbkdf2.obj \
-	$(OBJDIR)\md5.obj \
-	$(OBJDIR)\aes-cbc.obj \
 	$(OBJDIR)\aes-ctr.obj \
 	$(OBJDIR)\aes-eax.obj \
 	$(OBJDIR)\aes-encblock.obj \
 	$(OBJDIR)\aes-omac1.obj \
-	$(OBJDIR)\aes-unwrap.obj \
-	$(OBJDIR)\aes-wrap.obj \
 	$(OBJDIR)\common.obj \
 	$(OBJDIR)\wpa_debug.obj \
 	$(OBJDIR)\wpabuf.obj \
@@ -112,13 +136,11 @@ OBJS = \
 	$(OBJDIR)\ctrl_iface_named_pipe.obj \
 	$(OBJDIR)\driver_ndis.obj \
 	$(OBJDIR)\driver_ndis_.obj \
-	$(OBJDIR)\scan_helpers.obj \
 	$(OBJDIR)\events.obj \
 	$(OBJDIR)\bssid_ignore.obj \
 	$(OBJDIR)\scan.obj \
 	$(OBJDIR)\wpas_glue.obj \
 	$(OBJDIR)\eap_register.obj \
-	$(OBJDIR)\config.obj \
 	$(OBJDIR)\l2_packet_winpcap.obj \
 	$(OBJDIR)\tls_openssl.obj \
 	$(OBJDIR)\ms_funcs.obj \
@@ -128,17 +150,15 @@ OBJS = \
 	$(OBJDIR)\notify.obj \
 	$(OBJDIR)\ndis_events.obj
 
-# OBJS = $(OBJS) $(OBJDIR)\eap_fast.obj
-
 OBJS_t = $(OBJS) \
 	$(OBJDIR)\eapol_test.obj \
 	$(OBJDIR)\radius.obj \
 	$(OBJDIR)\radius_client.obj \
-	$(OBJDIR)\config_file.obj $(OBJDIR)\base64.obj
+	$(OBJDIR)\config_file.obj
 
 OBJS_t2 = $(OBJS) \
 	$(OBJDIR)\preauth_test.obj \
-	$(OBJDIR)\config_file.obj $(OBJDIR)\base64.obj
+	$(OBJDIR)\config_file.obj
 
 OBJS2 = $(OBJDIR)\drivers.obj \
 	$(OBJDIR)\config_file.obj \
@@ -149,6 +169,10 @@ OBJS3 = $(OBJDIR)\drivers.obj \
 	$(OBJS3) $(OBJDIR)\main_winsvc.obj
 
 OBJS_c = \
+	$(OBJDIR)\cli.obj \
+	$(OBJDIR)\edit_simple.obj \
+	$(OBJDIR)\eloop_win.obj \
+	$(OBJDIR)\wpa_debug.obj \
 	$(OBJDIR)\os_win32.obj \
 	$(OBJDIR)\wpa_cli.obj \
 	$(OBJDIR)\wpa_ctrl.obj \
@@ -159,16 +183,13 @@ OBJS_p = \
 	$(OBJDIR)\common.obj \
 	$(OBJDIR)\wpa_debug.obj \
 	$(OBJDIR)\wpabuf.obj \
-	$(OBJDIR)\sha1.obj \
-	$(OBJDIR)\md5.obj \
 	$(OBJDIR)\crypto_openssl.obj \
-	$(OBJDIR)\sha1-pbkdf2.obj \
 	$(OBJDIR)\wpa_passphrase.obj
 
 LIBS = wbemuuid.lib libcmt.lib kernel32.lib uuid.lib ole32.lib oleaut32.lib \
 	ws2_32.lib Advapi32.lib Crypt32.lib Winscard.lib \
 	Packet.lib wpcap.lib \
-	libeay32.lib ssleay32.lib
+	libcrypto.lib libssl.lib User32.lib
 # If using Win32 OpenSSL binary installation from Shining Light Productions,
 # replace the last line with this for dynamic libraries
 #	libeay32MT.lib ssleay32MT.lib
@@ -227,14 +248,26 @@ win_if_list.exe: $(OBJDIR) $(OBJDIR)\win_if_list.obj
 {..\src\l2_packet}.c{$(OBJDIR)}.obj::
 	$(CC) $(CFLAGS) $<
 
+{..\src\radius}.c{$(OBJDIR)}.obj::
+	$(CC) $(CFLAGS) $<
+
 {.\}.c{$(OBJDIR)}.obj::
 	$(CC) $(CFLAGS) $<
 
 {.\}.cpp{$(OBJDIR)}.obj::
 	$(CC) $(CFLAGS) $<
 
+# @todo Conflict between src/utils/config.c and wpa_supplicant/config.c
+$(OBJDIR)\config___wpasup.obj:
+	$(CC) $(CFLAGS) .\config.c /Fo$(OBJDIR)\config___wpasup.obj
+
+$(OBJDIR)\config___utils.obj:
+	$(CC) $(CFLAGS) ..\src\utils\config.c /Fo$(OBJDIR)\config___utils.obj
+
 $(OBJDIR):
 	if not exist "$(OBJDIR)" mkdir "$(OBJDIR)"
 
 clean:
 	erase $(OBJDIR)\*.obj wpa_supplicant.exe
+	erase wpa_cli.exe wpa_passphrase.exe wpasvc.exe win_if_list.exe
+	erase eapol_test.exe preauth_test.exe

@@ -27,6 +27,38 @@
 #include "wpa_supplicant_i.h"
 #include "eloop.h"
 
+#ifndef UNICODE
+static BOOL ChangeServiceConfig2A_impl(SC_HANDLE hService, DWORD dwInfoLevel, LPVOID lpInfo)
+{
+	typedef BOOL (WINAPI *func_t)(SC_HANDLE, DWORD, LPVOID);
+	HINSTANCE dll;
+	BOOL result;
+	func_t func;
+
+	dll = LoadLibrary("advapi32");
+	if (dll == NULL) {
+		printf("ChangeServiceConfig2: Could not load advapi32.dll library");
+		result = FALSE;
+		return result;
+	}
+
+	func = (func_t)GetProcAddress(dll, "ChangeServiceConfig2A");
+	if (func == NULL) {
+		printf("ChangeServiceConfig2: Could not resolve ChangeServiceConfig2A");
+		result = FALSE;
+	} else {
+		result = func(hService, dwInfoLevel, lpInfo);
+	}
+
+	FreeLibrary(dll);
+	return result;
+}
+#ifdef ChangeServiceConfig2
+#undef ChangeServiceConfig2
+#endif
+#define ChangeServiceConfig2 ChangeServiceConfig2A_impl
+#endif
+
 #ifndef WPASVC_NAME
 #define WPASVC_NAME TEXT("wpasvc")
 #endif
@@ -131,6 +163,59 @@ static int read_interface(struct wpa_global *global, HKEY _hk,
 }
 
 
+static void prepare_registry(void)
+{
+	LONG ret;
+	HKEY hk, ihk;
+
+	hk = NULL;
+	ret = RegOpenKeyEx(WPA_KEY_ROOT, WPA_KEY_PREFIX, 0, KEY_QUERY_VALUE, &hk);
+	if (ret == ERROR_FILE_NOT_FOUND) {
+		hk = NULL;
+		ret = RegCreateKeyEx(WPA_KEY_ROOT, WPA_KEY_PREFIX, 0, NULL, 0, KEY_WRITE, NULL, &hk, NULL);
+		if (ret == ERROR_SUCCESS) {
+			DWORD dwVal = 0;
+			RegSetValueEx(hk, TEXT("debug_level"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
+			RegSetValueEx(hk, TEXT("debug_show_keys"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
+			RegSetValueEx(hk, TEXT("debug_timestamp"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
+			RegSetValueEx(hk, TEXT("debug_use_file"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
+		}
+	}
+	if (!hk)
+		return;
+
+	ihk = NULL;
+	ret = RegOpenKeyEx(hk, TEXT("interfaces"), 0, KEY_QUERY_VALUE, &ihk);
+	if (ret == ERROR_FILE_NOT_FOUND)
+		RegCreateKeyEx(hk, TEXT("interfaces"), 0, NULL, 0, KEY_WRITE, NULL, &ihk, NULL);
+	if (ihk)
+		RegCloseKey(ihk);
+
+	ihk = NULL;
+	ret = RegOpenKeyEx(hk, TEXT("configs\\default"), 0, KEY_QUERY_VALUE, &ihk);
+	if (ret == ERROR_FILE_NOT_FOUND) {
+		ret = RegCreateKeyEx(hk, TEXT("configs\\default"), 0, NULL, 0, KEY_WRITE, NULL, &ihk, NULL);
+		if (ret == ERROR_SUCCESS) {
+			DWORD dwVal = 2;
+			RegSetValueEx(ihk, TEXT("ap_scan"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
+			dwVal = 1;
+			RegSetValueEx(ihk, TEXT("update_config"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
+		}
+	}
+	if (ihk)
+		RegCloseKey(ihk);
+
+	ihk = NULL;
+	ret = RegOpenKeyEx(hk, TEXT("configs\\default\\networks"), 0, KEY_QUERY_VALUE, &ihk);
+	if (ret == ERROR_FILE_NOT_FOUND)
+		RegCreateKeyEx(hk, TEXT("configs\\default\\networks"), 0, NULL, 0, KEY_WRITE, NULL, &ihk, NULL);
+	if (ihk)
+		RegCloseKey(ihk);
+
+	RegCloseKey(hk);
+}
+
+
 static int wpa_supplicant_thread(void)
 {
 	int exitcode;
@@ -145,6 +230,8 @@ static int wpa_supplicant_thread(void)
 
 	os_memset(&params, 0, sizeof(params));
 	params.wpa_debug_level = MSG_INFO;
+
+	prepare_registry();
 
 	ret = RegOpenKeyEx(WPA_KEY_ROOT, WPA_KEY_PREFIX,
 			   0, KEY_QUERY_VALUE, &hk);
@@ -439,6 +526,7 @@ int main(int argc, char *argv[])
 				if (path == NULL)
 					return -1;
 			}
+			prepare_registry();
 			ret = register_service(path);
 			os_free(path);
 			return ret;

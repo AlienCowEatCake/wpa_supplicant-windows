@@ -49,7 +49,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
-				DisableSpecificWarnings="4244;4267"
+				DisableSpecificWarnings="4244;4267;4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -125,7 +125,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4244;4267"
+				DisableSpecificWarnings="4244;4267;4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -181,7 +181,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\..\src\common\cli.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\src\utils\common.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\utils\edit_simple.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\utils\eloop_win.c"
 				>
 			</File>
 			<File
@@ -194,6 +206,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\src\common\wpa_ctrl.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\utils\wpa_debug.c"
 				>
 			</File>
 		</Filter>

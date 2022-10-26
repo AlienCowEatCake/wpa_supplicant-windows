@@ -149,6 +149,15 @@ static inline unsigned int wpa_swap_32(unsigned int v)
 		((v & 0xff0000) >> 8) | (v >> 24);
 }
 
+static inline u64 wpa_swap_64(u64 v)
+{
+	unsigned int hi = (unsigned int)(v >> 32);
+	unsigned int lo = (unsigned int)(v);
+	hi = wpa_swap_32(hi);
+	lo = wpa_swap_32(lo);
+	return (((u64)(lo)) << 32) | hi;
+}
+
 #define le_to_host16(n) (n)
 #define host_to_le16(n) (n)
 #define be_to_host16(n) wpa_swap_16(n)
@@ -157,7 +166,10 @@ static inline unsigned int wpa_swap_32(unsigned int v)
 #define host_to_le32(n) (n)
 #define be_to_host32(n) wpa_swap_32(n)
 #define host_to_be32(n) wpa_swap_32(n)
+#define le_to_host64(n) (n)
 #define host_to_le64(n) (n)
+#define be_to_host64(n) wpa_swap_64(n)
+#define host_to_be64(n) wpa_swap_64(n)
 
 #define WPA_BYTE_SWAP_DEFINED
 

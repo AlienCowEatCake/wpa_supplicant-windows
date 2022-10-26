@@ -7,7 +7,9 @@
  */
 
 #include "utils/includes.h"
+#if !defined(_MSC_VER) || (_MSC_VER >= 1600)
 #include <stdint.h>
+#endif
 
 #include "utils/common.h"
 #include "utils/base64.h"

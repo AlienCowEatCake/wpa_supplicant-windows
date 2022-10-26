@@ -1849,7 +1849,7 @@ void ErrorMsg::showMsg(QString msg)
 #ifdef UNICODE
 		QString msg = QString::fromWCharArray(buf);
 #else
-        QString msg = QString::fromLocal8Bit(buf);
+		QString msg = QString::fromLocal8Bit(buf);
 #endif
 		setInformativeText(QString("[%1] %2").arg(err).arg(msg));
 		LocalFree(buf);

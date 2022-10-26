@@ -986,12 +986,7 @@ static int driver_get_capa(void *priv, struct wpa_driver_capa *capa)
 }
 
 
-struct wpa_driver_ops eapol_test_drv_ops = {
-	.name = "test",
-	.get_ssid = driver_get_ssid,
-	.get_bssid = driver_get_bssid,
-	.get_capa = driver_get_capa,
-};
+struct wpa_driver_ops eapol_test_drv_ops;
 
 static void wpa_init_conf(struct eapol_test_data *e,
 			  struct wpa_supplicant *wpa_s, const char *authsrv,
@@ -1000,6 +995,12 @@ static void wpa_init_conf(struct eapol_test_data *e,
 {
 	struct hostapd_radius_server *as;
 	int res;
+
+	os_memset(&eapol_test_drv_ops, 0, sizeof(eapol_test_drv_ops));
+	eapol_test_drv_ops.name = "test";
+	eapol_test_drv_ops.get_ssid = driver_get_ssid;
+	eapol_test_drv_ops.get_bssid = driver_get_bssid;
+	eapol_test_drv_ops.get_capa = driver_get_capa;
 
 	wpa_s->driver = &eapol_test_drv_ops;
 	wpa_s->drv_priv = e;

@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\src;..\..\..\src\utils;C:\dev\openssl\include"
+				AdditionalIncludeDirectories="..\..\..\src;..\..\..\src\utils;..\..\..\..\openssl-1.1.1-x86\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -49,7 +49,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
-				DisableSpecificWarnings="4244;4267"
+				DisableSpecificWarnings="4244;4267;4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -62,9 +62,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib"
+				AdditionalDependencies="ws2_32.lib Crypt32.lib libcrypto.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="..\..\..\..\openssl-1.1.1-x86\lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				TargetMachine="1"
@@ -119,14 +119,14 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\src;..\..\..\src\utils;C:\dev\openssl\include"
+				AdditionalIncludeDirectories="..\..\..\src;..\..\..\src\utils;..\..\..\..\openssl-1.1.1-x86\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4244;4267"
+				DisableSpecificWarnings="4244;4267;4996"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -139,8 +139,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ws2_32.lib"
+				AdditionalDependencies="ws2_32.lib Crypt32.lib libcrypto.lib"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\..\..\openssl-1.1.1-x86\lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -186,11 +187,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\crypto\md5.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\crypto\md5-internal.c"
+				RelativePath="..\..\..\src\crypto\crypto_openssl.c"
 				>
 			</File>
 			<File
@@ -198,23 +195,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\crypto\sha1.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\crypto\sha1-internal.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\crypto\sha1-prf.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\crypto\sha1-pbkdf2.c"
+				RelativePath="..\..\..\src\utils\wpa_debug.c"
 				>
 			</File>
 			<File
 				RelativePath="..\..\wpa_passphrase.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\utils\wpabuf.c"
 				>
 			</File>
 		</Filter>

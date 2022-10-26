@@ -1,5 +1,8 @@
 <RCC>
  <qresource prefix="/icons/status" >
+  <file alias="network-wireless-offline.png">icons/wpa_gui.png</file>
+  <file alias="network-wireless-acquiring.png">icons/wpa_gui.png</file>
+  <file alias="network-wireless-connected.png">icons/wpa_gui.png</file>
   <file alias="network-wireless-signal-none.png">icons/status/nm-signal-00.png</file>
   <file alias="network-wireless-signal-weak.png">icons/status/nm-signal-25.png</file>
   <file alias="network-wireless-signal-ok.png">icons/status/nm-signal-50.png</file>

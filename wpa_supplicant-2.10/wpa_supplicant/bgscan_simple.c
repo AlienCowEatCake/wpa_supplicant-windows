@@ -266,10 +266,10 @@ static void bgscan_simple_notify_signal_change(void *priv, int above,
 
 
 const struct bgscan_ops bgscan_simple_ops = {
-	.name = "simple",
-	.init = bgscan_simple_init,
-	.deinit = bgscan_simple_deinit,
-	.notify_scan = bgscan_simple_notify_scan,
-	.notify_beacon_loss = bgscan_simple_notify_beacon_loss,
-	.notify_signal_change = bgscan_simple_notify_signal_change,
+	"simple",
+	bgscan_simple_init,
+	bgscan_simple_deinit,
+	bgscan_simple_notify_scan,
+	bgscan_simple_notify_beacon_loss,
+	bgscan_simple_notify_signal_change,
 };

@@ -42,17 +42,17 @@ static u8 mka_algo_agility[4] = MKA_ALGO_AGILITY_2009;
 static struct macsec_ciphersuite cipher_suite_tbl[] = {
 	/* GCM-AES-128 */
 	{
-		.id = CS_ID_GCM_AES_128,
-		.name = CS_NAME_GCM_AES_128,
-		.capable = MACSEC_CAP_INTEG_AND_CONF_0_30_50,
-		.sak_len = DEFAULT_SA_KEY_LEN,
+		CS_ID_GCM_AES_128,
+		CS_NAME_GCM_AES_128,
+		MACSEC_CAP_INTEG_AND_CONF_0_30_50,
+		DEFAULT_SA_KEY_LEN,
 	},
 	/* GCM-AES-256 */
 	{
-		.id = CS_ID_GCM_AES_256,
-		.name = CS_NAME_GCM_AES_256,
-		.capable = MACSEC_CAP_INTEG_AND_CONF_0_30_50,
-		.sak_len = 32,
+		CS_ID_GCM_AES_256,
+		CS_NAME_GCM_AES_256,
+		MACSEC_CAP_INTEG_AND_CONF_0_30_50,
+		32,
 	},
 };
 #define CS_TABLE_SIZE (ARRAY_SIZE(cipher_suite_tbl))
@@ -60,15 +60,15 @@ static struct macsec_ciphersuite cipher_suite_tbl[] = {
 
 static struct mka_alg mka_alg_tbl[] = {
 	{
-		.parameter = MKA_ALGO_AGILITY_2009,
+		MKA_ALGO_AGILITY_2009,
 
-		.icv_len = DEFAULT_ICV_LEN,
+		DEFAULT_ICV_LEN,
 
-		.cak_trfm = ieee802_1x_cak_aes_cmac,
-		.ckn_trfm = ieee802_1x_ckn_aes_cmac,
-		.kek_trfm = ieee802_1x_kek_aes_cmac,
-		.ick_trfm = ieee802_1x_ick_aes_cmac,
-		.icv_hash = ieee802_1x_icv_aes_cmac,
+		ieee802_1x_cak_aes_cmac,
+		ieee802_1x_ckn_aes_cmac,
+		ieee802_1x_kek_aes_cmac,
+		ieee802_1x_ick_aes_cmac,
+		ieee802_1x_icv_aes_cmac,
 	},
 };
 #define MKA_ALG_TABLE_SIZE (ARRAY_SIZE(mka_alg_tbl))
@@ -2009,74 +2009,74 @@ struct mka_param_body_handler {
 static struct mka_param_body_handler mka_body_handler[] = {
 	/* Basic parameter set */
 	{
-		.body_tx      = ieee802_1x_mka_encode_basic_body,
-		.body_rx      = NULL,
-		.body_length  = ieee802_1x_mka_basic_body_length,
-		.body_present = ieee802_1x_mka_basic_body_present
+		ieee802_1x_mka_encode_basic_body,
+		NULL,
+		ieee802_1x_mka_basic_body_length,
+		ieee802_1x_mka_basic_body_present
 	},
 
 	/* Live Peer List parameter set */
 	{
-		.body_tx      = ieee802_1x_mka_encode_live_peer_body,
-		.body_rx      = ieee802_1x_mka_decode_live_peer_body,
-		.body_length  = ieee802_1x_mka_get_live_peer_length,
-		.body_present = ieee802_1x_mka_live_peer_body_present
+		ieee802_1x_mka_encode_live_peer_body,
+		ieee802_1x_mka_decode_live_peer_body,
+		ieee802_1x_mka_get_live_peer_length,
+		ieee802_1x_mka_live_peer_body_present
 	},
 
 	/* Potential Peer List parameter set */
 	{
-		.body_tx      = ieee802_1x_mka_encode_potential_peer_body,
-		.body_rx      = ieee802_1x_mka_decode_potential_peer_body,
-		.body_length  = ieee802_1x_mka_get_potential_peer_length,
-		.body_present = ieee802_1x_mka_potential_peer_body_present
+		ieee802_1x_mka_encode_potential_peer_body,
+		ieee802_1x_mka_decode_potential_peer_body,
+		ieee802_1x_mka_get_potential_peer_length,
+		ieee802_1x_mka_potential_peer_body_present
 	},
 
 	/* MACsec SAK Use parameter set */
 	{
-		.body_tx      = ieee802_1x_mka_encode_sak_use_body,
-		.body_rx      = ieee802_1x_mka_decode_sak_use_body,
-		.body_length  = ieee802_1x_mka_get_sak_use_length,
-		.body_present = ieee802_1x_mka_sak_use_body_present
+		ieee802_1x_mka_encode_sak_use_body,
+		ieee802_1x_mka_decode_sak_use_body,
+		ieee802_1x_mka_get_sak_use_length,
+		ieee802_1x_mka_sak_use_body_present
 	},
 
 	/* Distributed SAK parameter set */
 	{
-		.body_tx      = ieee802_1x_mka_encode_dist_sak_body,
-		.body_rx      = ieee802_1x_mka_decode_dist_sak_body,
-		.body_length  = ieee802_1x_mka_get_dist_sak_length,
-		.body_present = ieee802_1x_mka_dist_sak_body_present
+		ieee802_1x_mka_encode_dist_sak_body,
+		ieee802_1x_mka_decode_dist_sak_body,
+		ieee802_1x_mka_get_dist_sak_length,
+		ieee802_1x_mka_dist_sak_body_present
 	},
 
 	/* Distribute CAK parameter set */
 	{
-		.body_tx      = NULL,
-		.body_rx      = ieee802_1x_mka_decode_dist_cak_body,
-		.body_length  = NULL,
-		.body_present = NULL
+		NULL,
+		ieee802_1x_mka_decode_dist_cak_body,
+		NULL,
+		NULL
 	},
 
 	/* KMD parameter set */
 	{
-		.body_tx      = NULL,
-		.body_rx      = ieee802_1x_mka_decode_kmd_body,
-		.body_length  = NULL,
-		.body_present = NULL
+		NULL,
+		ieee802_1x_mka_decode_kmd_body,
+		NULL,
+		NULL
 	},
 
 	/* Announcement parameter set */
 	{
-		.body_tx      = NULL,
-		.body_rx      = ieee802_1x_mka_decode_announce_body,
-		.body_length  = NULL,
-		.body_present = NULL
+		NULL,
+		ieee802_1x_mka_decode_announce_body,
+		NULL,
+		NULL
 	},
 
 	/* ICV Indicator parameter set */
 	{
-		.body_tx      = ieee802_1x_mka_encode_icv_body,
-		.body_rx      = NULL,
-		.body_length  = ieee802_1x_mka_get_icv_length,
-		.body_present = ieee802_1x_mka_icv_body_present
+		ieee802_1x_mka_encode_icv_body,
+		NULL,
+		ieee802_1x_mka_get_icv_length,
+		ieee802_1x_mka_icv_body_present
 	},
 };
 

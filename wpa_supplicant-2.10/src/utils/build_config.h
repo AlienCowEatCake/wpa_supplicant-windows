@@ -36,8 +36,17 @@
 #define EAP_TTLS
 #define EAP_GTC
 #define EAP_OTP
+#define EAP_SIM
 #define EAP_LEAP
+#define EAP_PSK
+#define EAP_AKA
+#define EAP_FAST
+#define EAP_PAX
 #define EAP_TNC
+#define EAP_TLS_OPENSSL
+#define CONFIG_SHA256
+#define CONFIG_NO_SOCKLEN_T_TYPEDEF
+#define TLS_DEFAULT_CIPHERS "DEFAULT:!EXP:!LOW"
 #define _CRT_SECURE_NO_DEPRECATE
 
 #ifdef USE_INTERNAL_CRYPTO

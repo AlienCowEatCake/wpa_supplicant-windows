@@ -53,48 +53,48 @@ ConvertStringSecurityDescriptorToSecurityDescriptorA
 #undef ConvertStringSecurityDescriptorToSecurityDescriptor
 #endif
 
-BOOL ConvertStringSecurityDescriptorToSecurityDescriptor_fb(
-    LPCSTR StringSecurityDescriptor, DWORD StringSDRevision,
-    PSECURITY_DESCRIPTOR *SecurityDescriptor, PULONG SecurityDescriptorSize)
+static BOOL ConvertStringSecurityDescriptorToSecurityDescriptor_fb(
+	LPCSTR StringSecurityDescriptor, DWORD StringSDRevision,
+	PSECURITY_DESCRIPTOR *SecurityDescriptor, PULONG SecurityDescriptorSize)
 {
-    (void)StringSecurityDescriptor;
-    (void)StringSDRevision;
-    *SecurityDescriptor = NULL;
-    *SecurityDescriptorSize = 0;
-    return TRUE;
+	(void)StringSecurityDescriptor;
+	(void)StringSDRevision;
+	*SecurityDescriptor = NULL;
+	*SecurityDescriptorSize = 0;
+	return TRUE;
 }
 
-BOOL ConvertStringSecurityDescriptorToSecurityDescriptor_impl(
-    LPCSTR StringSecurityDescriptor, DWORD StringSDRevision,
-    PSECURITY_DESCRIPTOR *SecurityDescriptor, PULONG SecurityDescriptorSize)
+static BOOL ConvertStringSecurityDescriptorToSecurityDescriptor_impl(
+	LPCSTR StringSecurityDescriptor, DWORD StringSDRevision,
+	PSECURITY_DESCRIPTOR *SecurityDescriptor, PULONG SecurityDescriptorSize)
 {
-    typedef BOOL (WINAPI *func_t)(LPCSTR, DWORD, PSECURITY_DESCRIPTOR *, PULONG);
-    HINSTANCE dll;
-    BOOL result;
-    func_t func;
+	typedef BOOL (WINAPI *func_t)(LPCSTR, DWORD, PSECURITY_DESCRIPTOR *, PULONG);
+	HINSTANCE dll;
+	BOOL result;
+	func_t func;
 
-    dll = LoadLibrary("advapi32");
-    if (dll == NULL) {
-        wpa_printf(MSG_DEBUG, "CTRL: Could not load advapi32.dll library");
-        result = ConvertStringSecurityDescriptorToSecurityDescriptor_fb(
-                    StringSecurityDescriptor, StringSDRevision,
-                    SecurityDescriptor, SecurityDescriptorSize);
-        return result;
-    }
+	dll = LoadLibrary("advapi32");
+	if (dll == NULL) {
+		wpa_printf(MSG_DEBUG, "CTRL: Could not load advapi32.dll library");
+		result = ConvertStringSecurityDescriptorToSecurityDescriptor_fb(
+					StringSecurityDescriptor, StringSDRevision,
+					SecurityDescriptor, SecurityDescriptorSize);
+		return result;
+	}
 
-    func = (func_t)GetProcAddress(dll, "ConvertStringSecurityDescriptorToSecurityDescriptorA");
-    if (func == NULL) {
-        wpa_printf(MSG_DEBUG, "CTRL: Could not resolve ConvertStringSecurityDescriptorToSecurityDescriptorA");
-        result = ConvertStringSecurityDescriptorToSecurityDescriptor_fb(
-                    StringSecurityDescriptor, StringSDRevision,
-                    SecurityDescriptor, SecurityDescriptorSize);
-    } else {
-        result = func(StringSecurityDescriptor, StringSDRevision,
-                      SecurityDescriptor, SecurityDescriptorSize);
-    }
+	func = (func_t)GetProcAddress(dll, "ConvertStringSecurityDescriptorToSecurityDescriptorA");
+	if (func == NULL) {
+		wpa_printf(MSG_DEBUG, "CTRL: Could not resolve ConvertStringSecurityDescriptorToSecurityDescriptorA");
+		result = ConvertStringSecurityDescriptorToSecurityDescriptor_fb(
+					StringSecurityDescriptor, StringSDRevision,
+					SecurityDescriptor, SecurityDescriptorSize);
+	} else {
+		result = func(StringSecurityDescriptor, StringSDRevision,
+					  SecurityDescriptor, SecurityDescriptorSize);
+	}
 
-    FreeLibrary(dll);
-    return result;
+	FreeLibrary(dll);
+	return result;
 }
 
 #define ConvertStringSecurityDescriptorToSecurityDescriptor ConvertStringSecurityDescriptorToSecurityDescriptor_impl
