@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.15)
 project(wpa-supplicant VERSION 2.10 LANGUAGES C CXX)
 
 option(WPAS_STATIC_RUNTIME "Use static MSVC runtime library" OFF)
+option(WPAS_EXCLUDE_SVG_ICONS "Exclude SVG icon resources" OFF)
 set(WPAS_CTRL_IFACE "standalone" CACHE STRING "Control interface: pipe udp standalone")
 set_property(CACHE WPAS_CTRL_IFACE PROPERTY STRINGS pipe udp standalone)
 
@@ -474,6 +475,11 @@ else()
         "${BASE_DIR}/src/common/wpa_ctrl.c"
     )
 endif()
+if(NOT WPAS_EXCLUDE_SVG_ICONS)
+    list(APPEND EXTRA_GUI_SOURCES
+        "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/icons.qrc"
+    )
+endif()
 add_executable(
     wpa_gui
     WIN32
@@ -502,7 +508,6 @@ add_executable(
     "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/addinterface.cpp"
     "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/peers.cpp"
     "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/stringquery.cpp"
-    "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/icons.qrc"
     "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/icons_png.qrc"
     "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/icons_status.qrc"
     "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/wpagui.ui"
@@ -535,7 +540,6 @@ target_link_libraries(
     gdi32
     advapi32
     user32
-    winmm
     imm32
     ${EXTRA_GUI_LIBRARIES}
 )
