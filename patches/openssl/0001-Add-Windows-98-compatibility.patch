@@ -1,4 +1,4 @@
-From a7eda35e75b6099e182879d688a1eec62094588c Mon Sep 17 00:00:00 2001
+From 7741ed8e31a74db2853ef56ca992880844de2c47 Mon Sep 17 00:00:00 2001
 From: Peter Zhigalov <peter.zhigalov@gmail.com>
 Date: Mon, 24 Oct 2022 01:00:35 +0700
 Subject: [PATCH] Add Windows 98 compatibility
@@ -6,8 +6,9 @@ Subject: [PATCH] Add Windows 98 compatibility
 ---
  Configurations/10-main.conf |  5 ++---
  crypto/bio/b_addr.c         | 19 +++++++++++++++++++
+ crypto/rand/rand_win.c      | 17 +++++++++++++++++
  e_os.h                      |  9 ++++++++-
- 3 files changed, 29 insertions(+), 4 deletions(-)
+ 4 files changed, 46 insertions(+), 4 deletions(-)
 
 diff --git a/Configurations/10-main.conf b/Configurations/10-main.conf
 index 2fcb96a047..5196579673 100644
@@ -68,6 +69,34 @@ index 0af7a330bc..cc07faa7dc 100644
 +
  CRYPTO_RWLOCK *bio_lookup_lock;
  static CRYPTO_ONCE bio_lookup_init = CRYPTO_ONCE_STATIC_INIT;
+ 
+diff --git a/crypto/rand/rand_win.c b/crypto/rand/rand_win.c
+index 9036546008..78986488b0 100644
+--- a/crypto/rand/rand_win.c
++++ b/crypto/rand/rand_win.c
+@@ -116,6 +116,23 @@ size_t rand_pool_acquire_entropy(RAND_POOL *pool)
+         return entropy_available;
+ # endif
+ 
++    bytes_needed = rand_pool_bytes_needed(pool, 1 /*entropy_factor*/);
++    buffer = rand_pool_add_begin(pool, bytes_needed);
++    if (buffer != NULL) {
++        size_t bytes = 0;
++        static int rand_initialized = 0;
++        if (!rand_initialized) {
++            srand(GetTickCount());
++            rand_initialized = 1;
++        }
++        for (; bytes < bytes_needed; ++bytes)
++            buffer[bytes] = (unsigned char)(rand() % 256);
++        rand_pool_add_end(pool, bytes, 8 * bytes);
++        entropy_available = rand_pool_entropy_available(pool);
++    }
++    if (entropy_available > 0)
++        return entropy_available;
++
+     return rand_pool_entropy_available(pool);
+ }
  
 diff --git a/e_os.h b/e_os.h
 index 9af7f3758d..a4f18d7c82 100644

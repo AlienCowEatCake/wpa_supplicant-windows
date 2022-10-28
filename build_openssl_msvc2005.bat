@@ -22,6 +22,5 @@ rmdir /s /q "%BUILDDIR%\html"
 rmdir /s /q "%BUILDDIR%\share"
 rmdir /s /q "%BUILDDIR%\lib\pkgconfig"
 rmdir /s /q "%BUILDDIR%\lib\engines-1_1"
-del /f /s /q "%BUILDDIR%\lib\ossl_static.pdb"
 
 pause

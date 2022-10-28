@@ -116,6 +116,23 @@ size_t rand_pool_acquire_entropy(RAND_POOL *pool)
         return entropy_available;
 # endif
 
+    bytes_needed = rand_pool_bytes_needed(pool, 1 /*entropy_factor*/);
+    buffer = rand_pool_add_begin(pool, bytes_needed);
+    if (buffer != NULL) {
+        size_t bytes = 0;
+        static int rand_initialized = 0;
+        if (!rand_initialized) {
+            srand(GetTickCount());
+            rand_initialized = 1;
+        }
+        for (; bytes < bytes_needed; ++bytes)
+            buffer[bytes] = (unsigned char)(rand() % 256);
+        rand_pool_add_end(pool, bytes, 8 * bytes);
+        entropy_available = rand_pool_entropy_available(pool);
+    }
+    if (entropy_available > 0)
+        return entropy_available;
+
     return rand_pool_entropy_available(pool);
 }
 
