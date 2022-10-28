@@ -719,12 +719,14 @@ ndis_events_init(HANDLE *read_pipe, HANDLE *event_avail,
 
 	if (wmi_refcnt++ == 0) {
 		hr = CoInitializeEx(0, COINIT_MULTITHREADED);
+#ifndef CONFIG_CTRL_IFACE_STANDALONE
 		if (FAILED(hr)) {
 			wpa_printf(MSG_ERROR, "CoInitializeEx() failed - "
 				   "returned 0x%x", (int) hr);
 			os_free(events);
 			return NULL;
 		}
+#endif
 	}
 
 	if (wmi_first) {

@@ -215,8 +215,15 @@ static void prepare_registry(void)
 	RegCloseKey(hk);
 }
 
+#ifdef CONFIG_CTRL_IFACE_STANDALONE
+int wpa_supplicant_run_call(struct wpa_global *global);
+#define wpa_supplicant_run wpa_supplicant_run_call
+#endif
 
-static int wpa_supplicant_thread(void)
+#ifndef CONFIG_CTRL_IFACE_STANDALONE
+static
+#endif
+int wpa_supplicant_thread(void)
 {
 	int exitcode;
 	struct wpa_params params;
@@ -499,6 +506,7 @@ static void WINAPI service_start(DWORD argc, LPTSTR *argv)
 }
 
 
+#ifndef CONFIG_CTRL_IFACE_STANDALONE
 int main(int argc, char *argv[])
 {
 	SERVICE_TABLE_ENTRY dt[] = {
@@ -544,3 +552,4 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+#endif

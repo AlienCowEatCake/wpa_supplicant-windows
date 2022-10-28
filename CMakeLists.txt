@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.15)
 project(wpa-supplicant VERSION 2.10 LANGUAGES C CXX)
 
 option(WPAS_STATIC_RUNTIME "Use static MSVC runtime library" OFF)
-set(WPAS_CTRL_IFACE "pipe" CACHE STRING "Control interface: pipe udp")
-set_property(CACHE WPAS_CTRL_IFACE PROPERTY STRINGS pipe udp)
+set(WPAS_CTRL_IFACE "standalone" CACHE STRING "Control interface: pipe udp standalone")
+set_property(CACHE WPAS_CTRL_IFACE PROPERTY STRINGS pipe udp standalone)
 
 set(BASE_DIR "${CMAKE_CURRENT_LIST_DIR}/wpa_supplicant-2.10")
 set(OPENSSL_DIR "${CMAKE_CURRENT_LIST_DIR}/openssl-1.1.1-x86")
@@ -13,18 +13,18 @@ link_directories(
     AFTER
     "${OPENSSL_DIR}/lib"
     "${WPDPACK_DIR}/Lib"
-    )
+)
 include_directories(
     AFTER
     "${OPENSSL_DIR}/include"
     "${WPDPACK_DIR}/Include"
-    )
+)
 
 include_directories(
     "${BASE_DIR}/wpa_supplicant"
     "${BASE_DIR}/src"
     "${BASE_DIR}/src/utils"
-    )
+)
 
 set(GIT_REVISION_)
 find_package(Git)
@@ -36,7 +36,7 @@ if(Git_FOUND)
         ERROR_QUIET
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_STRIP_TRAILING_WHITESPACE
-        )
+    )
     message("Git revision: ${GIT_REVISION_}")
 endif()
 
@@ -49,7 +49,6 @@ set(COMPILE_DEFINITIONS
     IEEE8021X_EAPOL
     PKCS12_FUNCS
     PCSC_FUNCS
-    CONFIG_CTRL_IFACE
     CONFIG_DRIVER_NDIS
     CONFIG_NDIS_EVENTS_INTEGRATED
     CONFIG_DEBUG_FILE
@@ -70,7 +69,7 @@ set(COMPILE_DEFINITIONS
     EAP_TLS_OPENSSL
     CONFIG_SHA256
     CONFIG_NO_SOCKLEN_T_TYPEDEF
-    TLS_DEFAULT_CIPHERS="DEFAULT:!EXP:!LOW"
+    TLS_DEFAULT_CIPHERS="ALL"
     _CRT_SECURE_NO_DEPRECATE
     CONFIG_WPS
     EAP_WSC
@@ -92,11 +91,11 @@ set(COMPILE_DEFINITIONS
     CONFIG_BGSCAN
     CONFIG_BGSCAN_SIMPLE
     CONFIG_WEP
-    )
+)
 if(WPAS_CTRL_IFACE STREQUAL "pipe")
-    list(APPEND COMPILE_DEFINITIONS CONFIG_CTRL_IFACE_NAMED_PIPE)
+    list(APPEND COMPILE_DEFINITIONS CONFIG_CTRL_IFACE CONFIG_CTRL_IFACE_NAMED_PIPE)
 elseif(WPAS_CTRL_IFACE STREQUAL "udp")
-    list(APPEND COMPILE_DEFINITIONS CONFIG_CTRL_IFACE_UDP)
+    list(APPEND COMPILE_DEFINITIONS CONFIG_CTRL_IFACE CONFIG_CTRL_IFACE_UDP)
 endif()
 add_compile_definitions(${COMPILE_DEFINITIONS})
 
@@ -104,7 +103,7 @@ if(MSVC AND MSVC_TOOLSET_VERSION EQUAL 80)
     add_link_options(
         "/OPT:WIN98"
         "/MANIFEST:NO"
-        )
+    )
 endif()
 
 file(GLOB_RECURSE HEADERS ${BASE_DIR} *.h)
@@ -218,7 +217,6 @@ set(COMMON_SOURCES
     "${BASE_DIR}/wpa_supplicant/bss.c"
     "${BASE_DIR}/wpa_supplicant/bssid_ignore.c"
     "${BASE_DIR}/wpa_supplicant/config.c"
-    "${BASE_DIR}/wpa_supplicant/ctrl_iface.c"
     "${BASE_DIR}/wpa_supplicant/eap_register.c"
     "${BASE_DIR}/wpa_supplicant/events.c"
     "${BASE_DIR}/wpa_supplicant/notify.c"
@@ -232,22 +230,28 @@ set(COMMON_SOURCES
     "${BASE_DIR}/wpa_supplicant/wpas_glue.c"
     "${BASE_DIR}/wpa_supplicant/wpas_kay.c"
     "${BASE_DIR}/wpa_supplicant/wps_supplicant.c"
-    )
+)
 if(WPAS_CTRL_IFACE STREQUAL "pipe")
-    list(APPEND COMMON_SOURCES "${BASE_DIR}/wpa_supplicant/ctrl_iface_named_pipe.c")
+    list(APPEND COMMON_SOURCES
+        "${BASE_DIR}/wpa_supplicant/ctrl_iface.c"
+        "${BASE_DIR}/wpa_supplicant/ctrl_iface_named_pipe.c"
+    )
 elseif(WPAS_CTRL_IFACE STREQUAL "udp")
-    list(APPEND COMMON_SOURCES "${BASE_DIR}/wpa_supplicant/ctrl_iface_udp.c")
+    list(APPEND COMMON_SOURCES
+        "${BASE_DIR}/wpa_supplicant/ctrl_iface.c"
+        "${BASE_DIR}/wpa_supplicant/ctrl_iface_udp.c"
+    )
 endif()
 
 add_executable(
     win_if_list
     "${BASE_DIR}/wpa_supplicant/win_if_list.c"
-    )
+)
 target_link_libraries(
     win_if_list
     PRIVATE
     wpcap
-    )
+)
 add_dependencies(win_if_list headers)
 set_property(
     TARGET
@@ -255,7 +259,7 @@ set_property(
     PROPERTY
     MSVC_RUNTIME_LIBRARY
     "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-    )
+)
 
 add_executable(
     wpa_cli
@@ -267,12 +271,12 @@ add_executable(
     "${BASE_DIR}/src/utils/os_win32.c"
     "${BASE_DIR}/src/utils/wpa_debug.c"
     "${BASE_DIR}/wpa_supplicant/wpa_cli.c"
-    )
+)
 target_link_libraries(
     wpa_cli
     PRIVATE
     ws2_32
-    )
+)
 add_dependencies(wpa_cli headers)
 if(WPAS_STATIC_RUNTIME)
     set_property(
@@ -281,7 +285,7 @@ if(WPAS_STATIC_RUNTIME)
         PROPERTY
         MSVC_RUNTIME_LIBRARY
         "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-        )
+    )
 endif()
 
 add_executable(
@@ -292,14 +296,14 @@ add_executable(
     "${BASE_DIR}/src/utils/wpa_debug.c"
     "${BASE_DIR}/src/utils/wpabuf.c"
     "${BASE_DIR}/wpa_supplicant/wpa_passphrase.c"
-    )
+)
 target_link_libraries(
     wpa_passphrase
     PRIVATE
     ws2_32
     libcrypto
     crypt32
-    )
+)
 add_dependencies(wpa_passphrase headers)
 if(WPAS_STATIC_RUNTIME)
     set_property(
@@ -308,7 +312,7 @@ if(WPAS_STATIC_RUNTIME)
         PROPERTY
         MSVC_RUNTIME_LIBRARY
         "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-        )
+    )
 endif()
 
 add_executable(
@@ -317,7 +321,7 @@ add_executable(
     "${BASE_DIR}/src/drivers/drivers.c"
     "${BASE_DIR}/wpa_supplicant/config_file.c"
     "${BASE_DIR}/wpa_supplicant/main.c"
-    )
+)
 target_link_libraries(
     wpa_supplicant
     PRIVATE
@@ -328,7 +332,7 @@ target_link_libraries(
     wpcap
     libssl
     crypt32
-    )
+)
 add_dependencies(wpa_supplicant headers)
 if(WPAS_STATIC_RUNTIME)
     set_property(
@@ -337,7 +341,7 @@ if(WPAS_STATIC_RUNTIME)
         PROPERTY
         MSVC_RUNTIME_LIBRARY
         "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-        )
+    )
 endif()
 
 add_executable(
@@ -346,7 +350,7 @@ add_executable(
     "${BASE_DIR}/src/drivers/drivers.c"
     "${BASE_DIR}/wpa_supplicant/config_winreg.c"
     "${BASE_DIR}/wpa_supplicant/main_winsvc.c"
-    )
+)
 target_link_libraries(
     wpasvc
     PRIVATE
@@ -357,7 +361,7 @@ target_link_libraries(
     wpcap
     libssl
     crypt32
-    )
+)
 add_dependencies(wpasvc headers)
 if(WPAS_STATIC_RUNTIME)
     set_property(
@@ -366,7 +370,7 @@ if(WPAS_STATIC_RUNTIME)
         PROPERTY
         MSVC_RUNTIME_LIBRARY
         "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-        )
+    )
 endif()
 
 add_executable(
@@ -376,7 +380,7 @@ add_executable(
     "${BASE_DIR}/src/radius/radius_client.c"
     "${BASE_DIR}/wpa_supplicant/config_file.c"
     "${BASE_DIR}/wpa_supplicant/eapol_test.c"
-    )
+)
 target_link_libraries(
     eapol_test
     PRIVATE
@@ -387,7 +391,7 @@ target_link_libraries(
     wpcap
     libssl
     crypt32
-    )
+)
 add_dependencies(eapol_test headers)
 set_target_properties(eapol_test PROPERTIES EXCLUDE_FROM_ALL TRUE)
 if(WPAS_STATIC_RUNTIME)
@@ -397,7 +401,7 @@ if(WPAS_STATIC_RUNTIME)
         PROPERTY
         MSVC_RUNTIME_LIBRARY
         "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-        )
+    )
 endif()
 
 add_executable(
@@ -405,7 +409,7 @@ add_executable(
     ${COMMON_SOURCES}
     "${BASE_DIR}/wpa_supplicant/config_file.c"
     "${BASE_DIR}/wpa_supplicant/preauth_test.c"
-    )
+)
 target_link_libraries(
     preauth_test
     PRIVATE
@@ -416,7 +420,7 @@ target_link_libraries(
     wpcap
     libssl
     crypt32
-    )
+)
 add_dependencies(preauth_test headers)
 set_target_properties(preauth_test PROPERTIES EXCLUDE_FROM_ALL TRUE)
 if(WPAS_STATIC_RUNTIME)
@@ -426,7 +430,7 @@ if(WPAS_STATIC_RUNTIME)
         PROPERTY
         MSVC_RUNTIME_LIBRARY
         "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-        )
+    )
 endif()
 
 set(CMAKE_AUTOMOC ON)
@@ -437,11 +441,42 @@ find_package(Qt4 4.4.0 REQUIRED QtGui)
 QT4_ADD_TRANSLATION(
     QM_FILES
     "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/lang/wpa_gui_de.ts"
+)
+set(EXTRA_GUI_SOURCES)
+set(EXTRA_GUI_DEFINITIONS)
+set(EXTRA_GUI_LIBRARIES)
+if(WPAS_CTRL_IFACE STREQUAL "standalone")
+    list(APPEND EXTRA_GUI_SOURCES
+        ${COMMON_SOURCES}
+        "${BASE_DIR}/src/drivers/drivers.c"
+        "${BASE_DIR}/wpa_supplicant/config_winreg.c"
+        "${BASE_DIR}/wpa_supplicant/ctrl_iface.c"
+        "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/standalone.cpp"
+        "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/standalone.h"
+        "${BASE_DIR}/wpa_supplicant/main_winsvc.c"
     )
+    list(APPEND EXTRA_GUI_DEFINITIONS
+        crc32=wpa_s_crc32 # Conflict with libpng from Qt
+        CONFIG_CTRL_IFACE
+        CONFIG_CTRL_IFACE_NAMED_PIPE
+        CONFIG_CTRL_IFACE_STANDALONE
+        CONFIG_NO_STDOUT_DEBUG
+    )
+    list(APPEND EXTRA_GUI_LIBRARIES
+        wbemuuid
+        libcrypto
+        packet
+        wpcap
+        libssl
+    )
+else()
+    list(APPEND EXTRA_GUI_SOURCES
+        "${BASE_DIR}/src/common/wpa_ctrl.c"
+    )
+endif()
 add_executable(
     wpa_gui
     WIN32
-    "${BASE_DIR}/src/common/wpa_ctrl.c"
     "${BASE_DIR}/src/utils/common.c"
     "${BASE_DIR}/src/utils/os_win32.c"
     "${BASE_DIR}/src/utils/wpa_debug.c"
@@ -478,17 +513,19 @@ add_executable(
     "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/peers.ui"
     "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4/wpa_gui.rc"
     ${QM_FILES}
-    )
+    ${EXTRA_GUI_SOURCES}
+)
 target_compile_definitions(
     wpa_gui
     PRIVATE
     NOMINMAX
-    )
+    ${EXTRA_GUI_DEFINITIONS}
+)
 target_include_directories(
     wpa_gui
     PRIVATE
     "${BASE_DIR}/wpa_supplicant/wpa_gui-qt4"
-    )
+)
 target_link_libraries(
     wpa_gui
     PRIVATE
@@ -500,7 +537,8 @@ target_link_libraries(
     user32
     winmm
     imm32
-    )
+    ${EXTRA_GUI_LIBRARIES}
+)
 if(WPAS_STATIC_RUNTIME)
     set_property(
         TARGET
@@ -508,19 +546,24 @@ if(WPAS_STATIC_RUNTIME)
         PROPERTY
         MSVC_RUNTIME_LIBRARY
         "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-        )
+    )
 endif()
 
-install(
-    TARGETS
+set(PACKAGING_TARGETS
     win_if_list
-    wpa_cli
     wpa_gui
     wpa_passphrase
     wpa_supplicant
     wpasvc
+)
+if(NOT WPAS_CTRL_IFACE STREQUAL "standalone")
+    list(APPEND PACKAGING_TARGETS wpa_cli)
+endif()
+install(
+    TARGETS
+    ${PACKAGING_TARGETS}
     RUNTIME DESTINATION .
-    )
+)
 install(
     FILES
     "${BASE_DIR}/COPYING"
@@ -530,7 +573,7 @@ install(
     "${BASE_DIR}/wpa_supplicant/wpa_supplicant.conf"
     ${QM_FILES}
     DESTINATION .
-    )
+)
 
 set(CPACK_GENERATOR "ZIP")
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-windows-bin-${CMAKE_PROJECT_VERSION}-${WPAS_CTRL_IFACE}")

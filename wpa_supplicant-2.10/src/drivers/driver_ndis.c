@@ -2769,6 +2769,9 @@ static int wpa_driver_ndis_adapter_open(struct wpa_driver_ndis_data *drv)
 	char ifname[128];
 	os_snprintf(ifname, sizeof(ifname), "\\Device\\NPF_%s", drv->ifname);
 	drv->adapter = PacketOpenAdapter(ifname);
+	/* Win98 has ifnames without prefixes */
+	if (drv->adapter == NULL)
+		drv->adapter = PacketOpenAdapter(drv->ifname);
 	if (drv->adapter == NULL) {
 		wpa_printf(MSG_DEBUG, "NDIS: PacketOpenAdapter failed for "
 			   "'%s'", ifname);
@@ -2877,11 +2880,15 @@ static void * wpa_driver_ndis_init(void *ctx, const char *ifname)
 	drv->events = ndis_events_init(&drv->events_pipe, &drv->event_avail,
 				       drv->ifname, drv->adapter_desc);
 	if (drv->events == NULL) {
+		/* This is non-fatal error, ndis_events_init not work on Win98 */
+		/*
 		wpa_driver_ndis_deinit(drv);
 		return NULL;
+		*/
+	} else {
+		eloop_register_event(drv->event_avail, sizeof(drv->event_avail),
+				     wpa_driver_ndis_event_pipe_cb, drv, NULL);
 	}
-	eloop_register_event(drv->event_avail, sizeof(drv->event_avail),
-			     wpa_driver_ndis_event_pipe_cb, drv, NULL);
 #endif /* CONFIG_NDIS_EVENTS_INTEGRATED */
 
 #ifdef _WIN32_WCE

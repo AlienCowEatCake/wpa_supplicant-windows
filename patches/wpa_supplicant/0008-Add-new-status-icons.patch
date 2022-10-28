@@ -1,0 +1,216 @@
+From f113b7acc62225bc18b14868972a300320ada04f Mon Sep 17 00:00:00 2001
+From: Peter Zhigalov <peter.zhigalov@gmail.com>
+Date: Sat, 29 Oct 2022 03:38:39 +0700
+Subject: [PATCH 8/8] Add new status icons
+
+---
+ wpa_supplicant/wpa_gui-qt4/icons/status/0.png     | Bin 0 -> 129 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/status/1.png     | Bin 0 -> 130 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/status/2.png     | Bin 0 -> 130 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/status/3.png     | Bin 0 -> 130 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/status/4.png     | Bin 0 -> 127 bytes
+ .../wpa_gui-qt4/icons/status/nm-signal-00.png     | Bin 556 -> 0 bytes
+ .../wpa_gui-qt4/icons/status/nm-signal-100.png    | Bin 604 -> 0 bytes
+ .../wpa_gui-qt4/icons/status/nm-signal-25.png     | Bin 570 -> 0 bytes
+ .../wpa_gui-qt4/icons/status/nm-signal-50.png     | Bin 577 -> 0 bytes
+ .../wpa_gui-qt4/icons/status/nm-signal-75.png     | Bin 594 -> 0 bytes
+ wpa_supplicant/wpa_gui-qt4/icons_status.qrc       |  10 +++++-----
+ 11 files changed, 5 insertions(+), 5 deletions(-)
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/0.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/1.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/2.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/3.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/4.png
+ delete mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-00.png
+ delete mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-100.png
+ delete mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-25.png
+ delete mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-50.png
+ delete mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-75.png
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/0.png b/wpa_supplicant/wpa_gui-qt4/icons/status/0.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..d1953c13643c327d1e64e4a8e762a66b7f470b07
+GIT binary patch
+literal 129
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!93?!50ihlx9JOMr-u8B!GKqkX~hBIf*JTgpb
+z2eKJUg8YIR9G=}s19Fr-T^vI=qDzk`GBOzOuxy-BWBI&xMFC@@<8`O&UF$-BZO!GM
+WcuUkgwNrT_$RJNwKbLh*2~7anMI{*k
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/1.png b/wpa_supplicant/wpa_gui-qt4/icons/status/1.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..7a690e7079d761f2fa8424a072cfe30f9e3bb473
+GIT binary patch
+literal 130
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!93?!50ihlx9JOMr-t`FVU0htW{8P1$J!&&|z
+z56EUL3GxeOaCmkj4aiaPba4#fxSpJlkify3)D|Tn$fcB(=%UfFqE&FAf|9VfAQuZm
+XSDwh_DQi9+2btvQ>gTe~DWM4fy>B9I
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/2.png b/wpa_supplicant/wpa_gui-qt4/icons/status/2.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..7abdc9536732b681bbb13f4eaf83785ea0fea67d
+GIT binary patch
+literal 130
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!93?!50ihlx9JOMr-uBp1|KqkX~hBIf*#H9PH
+z0ojZtL4Lsu4$p3+0XZt3E{-7_*OL<x5;$0s+M*-`xs<XJT{JpQv<NO#P!bjw<YHl{
+WsuMBRi}}C~GRf1`&t;ucLK6Tb(H`;u
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/3.png b/wpa_supplicant/wpa_gui-qt4/icons/status/3.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..7af7a58b27611fe01ed717191e47131215aec9ce
+GIT binary patch
+literal 130
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!93?!50ihlx9JOMr-t_-O_76Ze7hBIf*Y*yPm
+z7szHT3GxeOaCmkj4aiaPba4#fxSpJlkify3)D|Tn$fabI=%UeaqD63_f|9VfAQuZm
+X+&|&)`haa9vl%>H{an^LB{Ts5JPIGB
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/4.png b/wpa_supplicant/wpa_gui-qt4/icons/status/4.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..7b9369085662530603dd9a38a49fdcd039c952bb
+GIT binary patch
+literal 127
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!93?!50ihlx9oB=)|u8B!GKqkX~hSqilCLn{c
+zB*-tA!Qt7BG$2RC)5S4_Bf9j6A|rzV56i|GHG<FY9|(BJ#MHd5b)9JJ>Mz;1<xCz4
+U+0U5cSO_x4)78&qol`;+0Oq42J^%m!
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-00.png b/wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-00.png
+deleted file mode 100644
+index 94eada7b31e5297edb522d5ea6c2040726731a4b..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 556
+zcmV+{0@MA8P)<h;3K|Lk000e1NJLTq000mG000mO1^@s6AM^iV00004b3#c}2nYxW
+zd<bNS00009a7bBm0007Z0007Z0oq{WPXGV_8FWQhbW?9;ba!ELWdL_~cP?peYja~^
+zaAhuUa%Y?FJQ@H10jWtuK~y-6y^_0*6EPHqzj#(7l!<~w1VyA&w4vBOqChFo@+dq9
+z%@#aBimB65B2XGu%2bPzCdm^-P>m*v$Ct59!OSEpaS07>e2!&*=Rf~3{Lhu9>2$N%
+z+;29U`!r3b09XG4=ytnr27|#hK$0Xkz~@T<S3nFnV@$Bt0-&`9K>X#g$g=EXp6AE?
+ze*aA=C5$l`W3bkSOIqkS=blO_5kfpxN=1!=s;Yhqh!%^*+g`8te7oI#XetUJu-1l4
+z08hr_@%s=$6he5J=XuatBZQ!;suu9479yoo<h@5q8ELIsfYusg3;@QM6JR!*O(&Dd
+zEx>#}f2WkfIfqgzR8<w47QFYZ0_WTb5XbRNk|fsv!{P9iloIbfN~xf==1jr)7*BxX
+z@#qeR15K=y!h7FJZWNq*@W8~w;oys+ppHXXmaPJ7Em~_joetL8(0K5`L@8yfpe#!#
+zr6hzvvm0Ytz%QqeW!aY`NnQgim&?02j$icq{b#$~?o(Yr6h-lUy<RUzqtRD@)oOJI
+u(5Xk)0Up({;^*Iw08^jEfUEQKd*KJ`o>203g0_zU0000<MNUMnLSTX%hVl~t
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-100.png b/wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-100.png
+deleted file mode 100644
+index 40b590294478dbfa04e90c9ade7da8cd518ffcff..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 604
+zcmV-i0;BzjP)<h;3K|Lk000e1NJLTq000mG000mO1^@s6AM^iV00004b3#c}2nYxW
+zd<bNS00009a7bBm0007Z0007Z0oq{WPXGV_8FWQhbW?9;ba!ELWdL_~cP?peYja~^
+zaAhuUa%Y?FJQ@H10oh4JK~y-6rPIA?R6!KL@&EnE-8G4cC<csJNU%(i7qAE^BtD0Q
+zSP3F|00oI)z{b`G5X43hwK8ZU1W6&n3KAtjL9?6Py*uZenL8G{aTjDI!Bfo_KhBvm
+z1OFMxaSmT!+gO=jSX>9#{k(nq(Y>3m^5XzfWmk6(iX{Mz`6_TEAO{K{sQ8%q(8rwp
+z+5A_eYa35roSM71oJ4KC-+cXe!g~PBTRaMo?6>vozHf4Ja$;7*W%WbA{8%8n^YF=y
+z$?2(uot?(BrWk2%sDgzM{UH#-Sm1Q0n1Ar?m(TM0`OCg+#l#HBz^e`c(eW9SJ<U`N
+z*DW(qi&<f48d39va9F}f2G?%gU%7B;X&vCh+vj(CP7yIGl_=)pgc(^9vEWBa7`eo*
+zCaYh5vILNwII}F`Q1t}S=uN<kG^sGNAz&jwtKA9JObNh2w;Q4pL<8O_VxDLQvBG4S
+zfyzi1%CcAGy*^Nuy_oj|^8s}(n)f6%Ppqo(UFfvCAusztr`-*O6GBztoTI8DnHeD@
+zgA&5uC46mcztME+3cy}tYtvC%ENatpt?!MOBq_5ZsY>TZbNA!B`pmg4facz(O&I>h
+q1gH<jj{e)v03ECqKp4zN&&A)jJxc{3xzc|C0000<MNUMnLSTX(+zej;
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-25.png b/wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-25.png
+deleted file mode 100644
+index 379626293ba537039fae22d58d994b2397d713ce..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 570
+zcmV-A0>%A_P)<h;3K|Lk000e1NJLTq000mG000mO1^@s6AM^iV00004b3#c}2nYxW
+zd<bNS00009a7bBm0007Z0007Z0oq{WPXGV_8FWQhbW?9;ba!ELWdL_~cP?peYja~^
+zaAhuUa%Y?FJQ@H10k=s+K~y-6y^=qR6G0e<pPdbdCLw}Btx}0yEb;{`B!!%x!^+mL
+zaLoyRg#8XSf+%S`G}Rr6#U^ltU=b7!)+9SSe|BaplHKIMKe2I|*%@Y^dEVbU@IObA
+zB*QdK&(kzLPm*K^(D)ZXv)O#w?REzMtyb$8cz+0>0UQC&7!$0u0BEfN5P$hujK|}*
+zS(fFC#p0V%N*H4>#$c@thm;UG=k7=;5klNjO2w5yS(d*A#G}#ZdAr@dKby^7S2qeF
+zu-1k{0Jr=7{;Lo|971@MWm(W#BZQzV%Np>f5@MxP?7c@y8EdU;fYusg3;@QM9pKrE
+zm&4wJ!70Gx<C_zu6wW!6QlTu%P?g}luMM1YJ3wxt<1beX0OFh7$5KkX_b8=;)|x$o
+z{Wk6ZKUQn!I}(6po;#%!-uqg)GT6`HT8L5>zENxdQWl{oirT<hi`JSbim=v(DuZhw
+zu2;Eh$PHk<%AJ&w5CYX~jHv;??84W}&mW9vJpou;UYw1`_a1gSoxAh-{N2V%isf?o
+zeL9_f>h*dT0F%k&3?SOJE&^_BzZILe9|LB)cLccYdjDMb2@v8`Kb@oKZ~y=R07*qo
+IM6N<$g5DJNApigX
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-50.png b/wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-50.png
+deleted file mode 100644
+index da657cba69e31e5b1424bdd62aa9e1a64aa28fe6..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 577
+zcmV-H0>1r;P)<h;3K|Lk000e1NJLTq000mG000mO1^@s6AM^iV00004b3#c}2nYxW
+zd<bNS00009a7bBm0007Z0007Z0oq{WPXGV_8FWQhbW?9;ba!ELWdL_~cP?peYja~^
+zaAhuUa%Y?FJQ@H10lrB@K~y-6y^_Cf6EPgeKj%B8C8=782nJ9l#K@2rU_cpAd5%u3
+zJOV5rG4KHQ1S~8_2sSFn)F@%NB?Br*QISAtlJnU=+jk7fC8@-pvf#<K?2o^H4F7Ya
+zY1+%O>?F&wlQd0x0Li}qn$6~ecDvmLXti30z`M%;5}*MD5viPW09b1QP=C3s`u+Z!
+z>2#V;CX+K`j1mz<1m|3J84FPe;hNSOrPP5jCax8D?|%!3AHR6{u({W|b$U8}Rllf|
+z!Z}x625@!Jxbgh!4<9GHH}8r_WvxXih4+39_>+ZL7ZQs&Os->VlQqCvi--UqA{)Tb
+zqi4O&?e0^6;fL2x3L{wSD8*LZ`>M83mgQPO2w?-rB|7~4oi0FprG3v@gNP^CrTi@g
+z+cj<g=krA<_cZ{sJP(zzSP6Ku46s(Poxz0=wJyq}SOT;zs-&<u9}r_I5y4tZ6h%1a
+zsyc%UAui^5Nc0l0nCGEkETJqh#;g_8fM2%oW&G*AsMdXe$#`&V*tyf#*}HyzHhw$U
+zKR|1(X0zG1(P;Fs)9DNVhQr}8K(wkZ0(Mt(!}9OPfUNc!Kv=D}&s9GGzjRLe$>g><
+P00000NkvXXu0mjfqRshF
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-75.png b/wpa_supplicant/wpa_gui-qt4/icons/status/nm-signal-75.png
+deleted file mode 100644
+index 0ffb7ab37ddfdb0c8a415edc79766a86c49ce57b..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 594
+zcmV-Y0<HatP)<h;3K|Lk000e1NJLTq000mG000mO1^@s6AM^iV00004b3#c}2nYxW
+zd<bNS00009a7bBm0007Z0007Z0oq{WPXGV_8FWQhbW?9;ba!ELWdL_~cP?peYja~^
+zaAhuUa%Y?FJQ@H10nbT9K~y-6z0$jClu;1C@&9+pZn7JVxR^rOLd4P{FJKW;NPG?}
+zTMHjR8wCX)VDSM2u@OW&gLa9l#Wq_=6huLjb$7q-%*?r1WOFHEh>cU78$agE4E)dN
+z^?GZA!C-SR7;N@>y)}UHUw~Gtb+gmytN^sz?RDVIX@C-F06|rgnE@ao2bU*Be)sY7
+zSLc>5uVzU{uKMs)RRJ)wbQ&Pr8S8}|zss4{+|ojD#eN3f`@aIky(iCZw-(!1wzr2b
+zcE!j`LlrDqIt_4s(zy8O>n~rF^OvssYLqfFqyUdU08aWsQPo<g8g5z@qLzw=p?N}*
+zuwMgJJp^vudAQcSy7B;^|L*1e+9@JNR7qk!&6!bTiCDyg3_=Kpz*MvK&p%lKC>A=a
+zA`Vqg5KZ0$%*eBdcsbg}Ltr$Xgm|_B;P-SIk`qJ&-YH_9WCkhXOMiS3tE!G=y$4iP
+zoyuA;A5iC#c~92#q!_Ve>DW1#jHjWj_JGNF8X8UrG2)yf#zbL82pNVQ--R#3Pj5AE
+z-vIbF+}dz7uQi&B%cJkZ*JL?MBDu=shp#`r?{>Re0R4V{10b8VE(7LgYscQ~7l6*r
+g8bFxskG@NP0K^PN;ui?x+5i9m07*qoM6N<$g4z85MF0Q*
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons_status.qrc b/wpa_supplicant/wpa_gui-qt4/icons_status.qrc
+index 6ed8a00..8e83891 100644
+--- a/wpa_supplicant/wpa_gui-qt4/icons_status.qrc
++++ b/wpa_supplicant/wpa_gui-qt4/icons_status.qrc
+@@ -3,10 +3,10 @@
+   <file alias="network-wireless-offline.png">icons/wpa_gui.png</file>
+   <file alias="network-wireless-acquiring.png">icons/wpa_gui.png</file>
+   <file alias="network-wireless-connected.png">icons/wpa_gui.png</file>
+-  <file alias="network-wireless-signal-none.png">icons/status/nm-signal-00.png</file>
+-  <file alias="network-wireless-signal-weak.png">icons/status/nm-signal-25.png</file>
+-  <file alias="network-wireless-signal-ok.png">icons/status/nm-signal-50.png</file>
+-  <file alias="network-wireless-signal-good.png">icons/status/nm-signal-75.png</file>
+-  <file alias="network-wireless-signal-excellent.png">icons/status/nm-signal-100.png</file>
++  <file alias="network-wireless-signal-none.png">icons/status/0.png</file>
++  <file alias="network-wireless-signal-weak.png">icons/status/1.png</file>
++  <file alias="network-wireless-signal-ok.png">icons/status/2.png</file>
++  <file alias="network-wireless-signal-good.png">icons/status/3.png</file>
++  <file alias="network-wireless-signal-excellent.png">icons/status/4.png</file>
+  </qresource>
+ </RCC>
+-- 
+2.30.2
+

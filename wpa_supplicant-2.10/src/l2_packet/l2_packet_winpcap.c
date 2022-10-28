@@ -220,8 +220,12 @@ struct l2_packet_data * l2_packet_init(
 		os_memcpy(l2->own_addr, own_addr, ETH_ALEN);
 
 	if (l2_packet_init_libpcap(l2, protocol)) {
-		os_free(l2);
-		return NULL;
+		os_snprintf(l2->ifname, sizeof(l2->ifname), "%s", ifname);
+		/* Win98 has ifnames without prefixes */
+		if (l2_packet_init_libpcap(l2, protocol)) {
+			os_free(l2);
+			return NULL;
+		}
 	}
 
 	if (!rx_callback)

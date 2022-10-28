@@ -28,6 +28,9 @@
 #include "common/wpa_ctrl.h"
 #include "userdatarequest.h"
 #include "networkconfig.h"
+#ifdef CONFIG_CTRL_IFACE_STANDALONE
+#include "standalone.h"
+#endif
 
 
 #if defined(_MSC_VER) && (_MSC_VER < 1900)
@@ -179,6 +182,11 @@ WpaGui::WpaGui(QApplication *_app, QWidget *parent, const char *,
 	else
 		show();
 
+#ifdef CONFIG_CTRL_IFACE_STANDALONE
+	if (!serviceRunning())
+		WpaGui::startService();
+#endif
+
 	connectedToService = false;
 	textStatus->setText(tr("connecting to wpa_supplicant"));
 	timer = new QTimer(this);
@@ -250,6 +258,11 @@ WpaGui::~WpaGui()
 
 	free(ctrl_iface_dir);
 	ctrl_iface_dir = NULL;
+
+#ifdef CONFIG_CTRL_IFACE_STANDALONE
+	if (serviceRunning())
+		WpaGui::stopService();
+#endif
 }
 
 
@@ -1863,6 +1876,7 @@ void ErrorMsg::showMsg(QString msg)
 
 void WpaGui::startService()
 {
+#ifndef CONFIG_CTRL_IFACE_STANDALONE
 	SC_HANDLE svc, scm;
 
 	scm = OpenSCManager(0, 0, SC_MANAGER_CONNECT);
@@ -1885,11 +1899,15 @@ void WpaGui::startService()
 
 	CloseServiceHandle(svc);
 	CloseServiceHandle(scm);
+#else
+	StandaloneSupplicant::instance()->start();
+#endif
 }
 
 
 void WpaGui::stopService()
 {
+#ifndef CONFIG_CTRL_IFACE_STANDALONE
 	SC_HANDLE svc, scm;
 	SERVICE_STATUS status;
 
@@ -1913,11 +1931,15 @@ void WpaGui::stopService()
 
 	CloseServiceHandle(svc);
 	CloseServiceHandle(scm);
+#else
+	StandaloneSupplicant::instance()->stop();
+#endif
 }
 
 
 bool WpaGui::serviceRunning()
 {
+#ifndef CONFIG_CTRL_IFACE_STANDALONE
 	SC_HANDLE svc, scm;
 	SERVICE_STATUS status;
 	bool running = false;
@@ -1944,6 +1966,9 @@ bool WpaGui::serviceRunning()
 	CloseServiceHandle(scm);
 
 	return running;
+#else
+	return StandaloneSupplicant::instance()->isRunning();
+#endif
 }
 
 #endif /* CONFIG_NATIVE_WINDOWS */
