@@ -25,6 +25,9 @@ public:
 #if !defined(QT_NO_SESSIONMANAGER) && QT_VERSION < 0x050000
 	virtual void saveState(QSessionManager &manager);
 #endif
+#if defined(CONFIG_NATIVE_WINDOWS) && QT_VERSION < 0x050000
+	virtual bool winEventFilter(MSG *message, long *result);
+#endif
 
 	WpaGui *w;
 	int argc;
@@ -111,6 +114,8 @@ public slots:
 #ifdef CONFIG_NATIVE_WINDOWS
 	virtual void startService();
 	virtual void stopService();
+	virtual void addToStartup();
+	virtual void removeFromStartup();
 #endif /* CONFIG_NATIVE_WINDOWS */
 	virtual void addInterface();
 
@@ -166,6 +171,9 @@ private:
 	QAction *fileStopServiceAction;
 
 	bool serviceRunning();
+
+	QAction *fileAddToStartupAction;
+	QAction *fileRemoveFromStartupAction;
 #endif /* CONFIG_NATIVE_WINDOWS */
 
 	QAction *addInterfaceAction;

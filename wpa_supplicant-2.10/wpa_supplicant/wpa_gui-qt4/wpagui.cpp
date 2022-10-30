@@ -86,6 +86,23 @@ WpaGui::WpaGui(QApplication *_app, QWidget *parent, const char *,
 
 	connect(addInterfaceAction, SIGNAL(triggered()), this,
 		SLOT(addInterface()));
+
+	fileRemoveFromStartupAction = new QAction(this);
+	fileRemoveFromStartupAction->setObjectName("Remove From Startup");
+	fileRemoveFromStartupAction->setIconText(tr("Remove From Startup"));
+	fileMenu->insertAction(fileExitAction, fileRemoveFromStartupAction);
+
+	fileAddToStartupAction = new QAction(this);
+	fileAddToStartupAction->setObjectName("Add To Startup");
+	fileAddToStartupAction->setIconText(tr("Add To Startup"));
+	fileMenu->insertAction(fileRemoveFromStartupAction, fileAddToStartupAction);
+
+	fileMenu->insertSeparator(fileExitAction);
+
+	connect(fileAddToStartupAction, SIGNAL(triggered()), this,
+		SLOT(addToStartup()));
+	connect(fileRemoveFromStartupAction, SIGNAL(triggered()), this,
+		SLOT(removeFromStartup()));
 #endif /* CONFIG_NATIVE_WINDOWS */
 
 	(void) statusBar();
@@ -1969,6 +1986,20 @@ bool WpaGui::serviceRunning()
 #else
 	return StandaloneSupplicant::instance()->isRunning();
 #endif
+}
+
+void WpaGui::addToStartup()
+{
+	QSettings settings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
+	settings.setValue(QLatin1String("wpa_gui"), QString::fromLatin1("\"%1\" -t -q").arg(qApp->applicationFilePath()));
+	QMessageBox::information(this, QString(), tr("Done"));
+}
+
+void WpaGui::removeFromStartup()
+{
+	QSettings settings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
+	settings.remove(QLatin1String("wpa_gui"));
+	QMessageBox::information(this, QString(), tr("Done"));
 }
 
 #endif /* CONFIG_NATIVE_WINDOWS */

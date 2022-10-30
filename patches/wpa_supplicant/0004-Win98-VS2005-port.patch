@@ -1,4 +1,4 @@
-From ab9b4f4d9155fcfbdac37771391223cb051bd00a Mon Sep 17 00:00:00 2001
+From cf853e19d084f23e697322db867753423bb3a13f Mon Sep 17 00:00:00 2001
 From: Peter Zhigalov <peter.zhigalov@gmail.com>
 Date: Tue, 25 Oct 2022 04:48:46 +0700
 Subject: [PATCH 4/5] Win98/VS2005 port
@@ -53,14 +53,16 @@ Subject: [PATCH 4/5] Win98/VS2005 port
  wpa_supplicant/wpa_gui-qt4/icons/wpa_gui.png  | Bin 0 -> 744 bytes
  wpa_supplicant/wpa_gui-qt4/icons_png.qrc      |  10 +-
  wpa_supplicant/wpa_gui-qt4/icons_status.qrc   |  12 +
+ wpa_supplicant/wpa_gui-qt4/main.cpp           |  12 +-
  wpa_supplicant/wpa_gui-qt4/networkconfig.cpp  |   5 +
  wpa_supplicant/wpa_gui-qt4/peers.cpp          |   5 +
  wpa_supplicant/wpa_gui-qt4/scanresults.cpp    |   5 +
  wpa_supplicant/wpa_gui-qt4/wpa_gui.pro        |  17 +-
  wpa_supplicant/wpa_gui-qt4/wpa_gui.rc         |   1 +
- wpa_supplicant/wpa_gui-qt4/wpagui.cpp         |  86 +++++--
+ wpa_supplicant/wpa_gui-qt4/wpagui.cpp         | 117 ++++++++--
+ wpa_supplicant/wpa_gui-qt4/wpagui.h           |   8 +
  wpa_supplicant/wpa_supplicant.c               |  58 +++++
- 56 files changed, 1561 insertions(+), 306 deletions(-)
+ 58 files changed, 1611 insertions(+), 307 deletions(-)
  create mode 100644 src/utils/inet_ntop.h
  create mode 100644 src/utils/inet_pton.h
  create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/ap.png
@@ -3646,6 +3648,36 @@ index 0000000..8e83891
 +  <file alias="network-wireless-signal-excellent.png">icons/status/4.png</file>
 + </qresource>
 +</RCC>
+diff --git a/wpa_supplicant/wpa_gui-qt4/main.cpp b/wpa_supplicant/wpa_gui-qt4/main.cpp
+index bbd45c6..62baf93 100644
+--- a/wpa_supplicant/wpa_gui-qt4/main.cpp
++++ b/wpa_supplicant/wpa_gui-qt4/main.cpp
+@@ -7,7 +7,8 @@
+  */
+ 
+ #ifdef CONFIG_NATIVE_WINDOWS
+-#include <winsock.h>
++#include <winsock2.h>
++#include <windows.h>
+ #endif /* CONFIG_NATIVE_WINDOWS */
+ #include <QApplication>
+ #include <QtCore/QLibraryInfo>
+@@ -30,6 +31,15 @@ void WpaGuiApp::saveState(QSessionManager &manager)
+ }
+ #endif
+ 
++#if defined(CONFIG_NATIVE_WINDOWS) && QT_VERSION < 0x050000
++bool WpaGuiApp::winEventFilter(MSG *message, long *result)
++{
++	if (message && message->message == WM_QUERYENDSESSION)
++		QMetaObject::invokeMethod(this, "quit", Qt::QueuedConnection);
++	return QApplication::winEventFilter(message, result);
++}
++#endif
++
+ 
+ int main(int argc, char *argv[])
+ {
 diff --git a/wpa_supplicant/wpa_gui-qt4/networkconfig.cpp b/wpa_supplicant/wpa_gui-qt4/networkconfig.cpp
 index 2727318..3637802 100644
 --- a/wpa_supplicant/wpa_gui-qt4/networkconfig.cpp
@@ -3745,7 +3777,7 @@ index 0000000..ac9308c
 @@ -0,0 +1 @@
 +IDI_ICON1 ICON DISCARDABLE icons/wpa_gui.ico
 diff --git a/wpa_supplicant/wpa_gui-qt4/wpagui.cpp b/wpa_supplicant/wpa_gui-qt4/wpagui.cpp
-index 9404ab4..9cd84a7 100644
+index 9404ab4..ef2a947 100644
 --- a/wpa_supplicant/wpa_gui-qt4/wpagui.cpp
 +++ b/wpa_supplicant/wpa_gui-qt4/wpagui.cpp
 @@ -11,21 +11,31 @@
@@ -3801,7 +3833,31 @@ index 9404ab4..9cd84a7 100644
  WpaGui::WpaGui(QApplication *_app, QWidget *parent, const char *,
  	       Qt::WindowFlags)
  	: QMainWindow(parent), app(_app)
-@@ -240,23 +261,43 @@ void WpaGui::languageChange()
+@@ -62,6 +83,23 @@ WpaGui::WpaGui(QApplication *_app, QWidget *parent, const char *,
+ 
+ 	connect(addInterfaceAction, SIGNAL(triggered()), this,
+ 		SLOT(addInterface()));
++
++	fileRemoveFromStartupAction = new QAction(this);
++	fileRemoveFromStartupAction->setObjectName("Remove From Startup");
++	fileRemoveFromStartupAction->setIconText(tr("Remove From Startup"));
++	fileMenu->insertAction(fileExitAction, fileRemoveFromStartupAction);
++
++	fileAddToStartupAction = new QAction(this);
++	fileAddToStartupAction->setObjectName("Add To Startup");
++	fileAddToStartupAction->setIconText(tr("Add To Startup"));
++	fileMenu->insertAction(fileRemoveFromStartupAction, fileAddToStartupAction);
++
++	fileMenu->insertSeparator(fileExitAction);
++
++	connect(fileAddToStartupAction, SIGNAL(triggered()), this,
++		SLOT(addToStartup()));
++	connect(fileRemoveFromStartupAction, SIGNAL(triggered()), this,
++		SLOT(removeFromStartup()));
+ #endif /* CONFIG_NATIVE_WINDOWS */
+ 
+ 	(void) statusBar();
+@@ -240,23 +278,43 @@ void WpaGui::languageChange()
  
  void WpaGui::parse_argv()
  {
@@ -3854,7 +3910,7 @@ index 9404ab4..9cd84a7 100644
  			break;
  		case 't':
  			startInTray = true;
-@@ -720,7 +761,7 @@ void WpaGui::updateNetworks()
+@@ -720,7 +778,7 @@ void WpaGui::updateNetworks()
  			continue;
  
  		/* avoid race conditions */
@@ -3863,7 +3919,7 @@ index 9404ab4..9cd84a7 100644
  		QString cmd("LIST_NETWORKS LAST_ID=");
  		cmd.append(id);
  		if (ctrlRequest(cmd.toLocal8Bit().constData(), buf, &len) < 0)
-@@ -1375,6 +1416,7 @@ void WpaGui::createTrayIcon(bool trayOnly)
+@@ -1375,6 +1433,7 @@ void WpaGui::createTrayIcon(bool trayOnly)
  	QApplication::setQuitOnLastWindowClosed(false);
  
  	tray_icon = new QSystemTrayIcon(this);
@@ -3871,7 +3927,7 @@ index 9404ab4..9cd84a7 100644
  	updateTrayIcon(TrayIconOffline);
  
  	connect(tray_icon,
-@@ -1577,7 +1619,21 @@ QIcon WpaGui::loadThemedIcon(const QStringList &names,
+@@ -1577,7 +1636,21 @@ QIcon WpaGui::loadThemedIcon(const QStringList &names,
  
  	for (QStringList::ConstIterator it = names.begin();
  	     it != names.end(); it++) {
@@ -3893,7 +3949,7 @@ index 9404ab4..9cd84a7 100644
  		if (!icon.isNull())
  			return icon;
  	}
-@@ -1790,7 +1846,11 @@ void ErrorMsg::showMsg(QString msg)
+@@ -1790,7 +1863,11 @@ void ErrorMsg::showMsg(QString msg)
  			  FORMAT_MESSAGE_FROM_SYSTEM,
  			  NULL, err, 0, (LPTSTR) (void *) &buf,
  			  0, NULL) > 0) {
@@ -3905,6 +3961,60 @@ index 9404ab4..9cd84a7 100644
  		setInformativeText(QString("[%1] %2").arg(err).arg(msg));
  		LocalFree(buf);
  	} else {
+@@ -1886,6 +1963,20 @@ bool WpaGui::serviceRunning()
+ 	return running;
+ }
+ 
++void WpaGui::addToStartup()
++{
++	QSettings settings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
++	settings.setValue(QLatin1String("wpa_gui"), QString::fromLatin1("\"%1\" -t -q").arg(qApp->applicationFilePath()));
++	QMessageBox::information(this, QString(), tr("Done"));
++}
++
++void WpaGui::removeFromStartup()
++{
++	QSettings settings("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
++	settings.remove(QLatin1String("wpa_gui"));
++	QMessageBox::information(this, QString(), tr("Done"));
++}
++
+ #endif /* CONFIG_NATIVE_WINDOWS */
+ 
+ 
+diff --git a/wpa_supplicant/wpa_gui-qt4/wpagui.h b/wpa_supplicant/wpa_gui-qt4/wpagui.h
+index f0a34c9..05b9b11 100644
+--- a/wpa_supplicant/wpa_gui-qt4/wpagui.h
++++ b/wpa_supplicant/wpa_gui-qt4/wpagui.h
+@@ -25,6 +25,9 @@ public:
+ #if !defined(QT_NO_SESSIONMANAGER) && QT_VERSION < 0x050000
+ 	virtual void saveState(QSessionManager &manager);
+ #endif
++#if defined(CONFIG_NATIVE_WINDOWS) && QT_VERSION < 0x050000
++	virtual bool winEventFilter(MSG *message, long *result);
++#endif
+ 
+ 	WpaGui *w;
+ 	int argc;
+@@ -111,6 +114,8 @@ public slots:
+ #ifdef CONFIG_NATIVE_WINDOWS
+ 	virtual void startService();
+ 	virtual void stopService();
++	virtual void addToStartup();
++	virtual void removeFromStartup();
+ #endif /* CONFIG_NATIVE_WINDOWS */
+ 	virtual void addInterface();
+ 
+@@ -166,6 +171,9 @@ private:
+ 	QAction *fileStopServiceAction;
+ 
+ 	bool serviceRunning();
++
++	QAction *fileAddToStartupAction;
++	QAction *fileRemoveFromStartupAction;
+ #endif /* CONFIG_NATIVE_WINDOWS */
+ 
+ 	QAction *addInterfaceAction;
 diff --git a/wpa_supplicant/wpa_supplicant.c b/wpa_supplicant/wpa_supplicant.c
 index d37a994..d6f5114 100644
 --- a/wpa_supplicant/wpa_supplicant.c

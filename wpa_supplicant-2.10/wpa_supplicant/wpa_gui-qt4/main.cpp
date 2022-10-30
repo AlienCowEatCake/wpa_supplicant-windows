@@ -7,7 +7,8 @@
  */
 
 #ifdef CONFIG_NATIVE_WINDOWS
-#include <winsock.h>
+#include <winsock2.h>
+#include <windows.h>
 #endif /* CONFIG_NATIVE_WINDOWS */
 #include <QApplication>
 #include <QtCore/QLibraryInfo>
@@ -27,6 +28,15 @@ void WpaGuiApp::saveState(QSessionManager &manager)
 {
 	QApplication::saveState(manager);
 	w->saveState();
+}
+#endif
+
+#if defined(CONFIG_NATIVE_WINDOWS) && QT_VERSION < 0x050000
+bool WpaGuiApp::winEventFilter(MSG *message, long *result)
+{
+	if (message && message->message == WM_QUERYENDSESSION)
+		QMetaObject::invokeMethod(this, "quit", Qt::QueuedConnection);
+	return QApplication::winEventFilter(message, result);
 }
 #endif
 
