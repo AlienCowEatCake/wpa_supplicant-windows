@@ -602,13 +602,23 @@ install(
     ${PACKAGING_TARGETS}
     RUNTIME DESTINATION .
 )
-install(
-    FILES
+set(INSTALL_TEXT_FILES)
+set(INSTALL_TEXT_FILES_SRC
     "${BASE_DIR}/COPYING"
     "${BASE_DIR}/wpa_supplicant/README"
     "${BASE_DIR}/wpa_supplicant/README-Windows.txt"
     "${BASE_DIR}/wpa_supplicant/win_example.reg"
     "${BASE_DIR}/wpa_supplicant/wpa_supplicant.conf"
+    )
+foreach(INSTALL_TEXT_FILE ${INSTALL_TEXT_FILES_SRC})
+    get_filename_component(INSTALL_TEXT_FILE_TARGET "${INSTALL_TEXT_FILE}" NAME)
+    set(INSTALL_TEXT_FILE_TARGET "${CMAKE_BINARY_DIR}/configs/${INSTALL_TEXT_FILE_TARGET}")
+    configure_file("${INSTALL_TEXT_FILE}" "${INSTALL_TEXT_FILE_TARGET}" @ONLY NEWLINE_STYLE WIN32)
+    list(APPEND INSTALL_TEXT_FILES "${INSTALL_TEXT_FILE_TARGET}")
+endforeach()
+install(
+    FILES
+    ${INSTALL_TEXT_FILES}
     ${QM_FILES}
     DESTINATION .
 )
