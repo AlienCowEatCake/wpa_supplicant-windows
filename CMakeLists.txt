@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 project(wpa-supplicant VERSION 2.10 LANGUAGES C CXX)
+set(PORT_REVISION "R20221030")
 
 option(WPAS_STATIC_RUNTIME "Use static MSVC runtime library" OFF)
 option(WPAS_EXCLUDE_SVG_ICONS "Exclude SVG icon resources" OFF)
@@ -27,23 +28,25 @@ include_directories(
     "${BASE_DIR}/src/utils"
 )
 
-set(GIT_REVISION_)
+set(GIT_REVISION)
+set(GIT_VERSION_STR_POSTFIX)
 find_package(Git)
 if(Git_FOUND)
     execute_process(
         COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
-        OUTPUT_VARIABLE GIT_REVISION_
+        OUTPUT_VARIABLE GIT_REVISION
         ERROR_QUIET
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_STRIP_TRAILING_WHITESPACE
     )
-    message("Git revision: ${GIT_REVISION_}")
+    message("Git revision: ${GIT_REVISION}")
+    set(GIT_VERSION_STR_POSTFIX " \(${GIT_REVISION}\)")
 endif()
 
 set(COMPILE_DEFINITIONS
-    VERSION_STR_POSTFIX=" Windows port, iface=${WPAS_CTRL_IFACE}"
-    GIT_VERSION_STR_POSTFIX=", commit=${GIT_REVISION_}"
+    VERSION_STR_POSTFIX=" win32 port ${PORT_REVISION}-${WPAS_CTRL_IFACE}"
+    GIT_VERSION_STR_POSTFIX="${GIT_VERSION_STR_POSTFIX}"
     CONFIG_FORCE_DHCP_RENEW
     CONFIG_L2_IP_IPHLPAPI
     CONFIG_NATIVE_WINDOWS
@@ -624,6 +627,6 @@ install(
 )
 
 set(CPACK_GENERATOR "ZIP")
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-windows-bin-${CMAKE_PROJECT_VERSION}-${WPAS_CTRL_IFACE}")
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-windows-bin-${CMAKE_PROJECT_VERSION}-${PORT_REVISION}-${WPAS_CTRL_IFACE}")
 set(CPACK_STRIP_FILES TRUE)
 include(CPack)
