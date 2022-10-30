@@ -15,6 +15,9 @@
 #include <net/if.h>
 #include <fnmatch.h>
 #endif /* CONFIG_MATCH_IFACE */
+#ifdef CONFIG_FORCE_DHCP_RENEW
+#include <iphlpapi.h>
+#endif /* CONFIG_FORCE_DHCP_RENEW */
 
 #include "common.h"
 #include "crypto/random.h"
@@ -925,6 +928,61 @@ void wpa_supplicant_set_state(struct wpa_supplicant *wpa_s,
 	wpa_dbg(wpa_s, MSG_DEBUG, "State: %s -> %s",
 		wpa_supplicant_state_txt(wpa_s->wpa_state),
 		wpa_supplicant_state_txt(state));
+
+#ifdef CONFIG_FORCE_DHCP_RENEW
+	/*
+	 * On Win98 we have no correctly assigned IP address after
+	 * connection complete. A call to renew is required, but it doesn't
+	 * happen automatically. We will try to automate this by making
+	 * call to renew here. Also, on Win98 we have empty interface
+	 * names, so let's renew them all.
+	 */
+	if (state == WPA_COMPLETED && old_state != WPA_COMPLETED && LOBYTE(LOWORD(GetVersion())) < 5) {
+		ULONG info_len = 0;
+		if (GetInterfaceInfo(NULL, &info_len) == ERROR_INSUFFICIENT_BUFFER) {
+			PIP_INTERFACE_INFO info = os_malloc(info_len);
+			if (GetInterfaceInfo(info, &info_len) == NO_ERROR) {
+				LONG index;
+				for (index = 0; index < info->NumAdapters; ++index) {
+					size_t i;
+					char name[128];
+					for (i = 0; i < sizeof(name); ++i) {
+						name[i] = *((char*)(&(info->Adapter[index].Name[i])));
+						if (name[i] == '\0')
+							break;
+						else if (!isprint(name[i]))
+							name[i] = '_';
+					}
+
+					if (IpReleaseAddress(&info->Adapter[index]) == NO_ERROR) {
+						wpa_printf(MSG_DEBUG, "DHCP_RENEW: IP release succeeded "
+						           "for Name=%s, Index=%ld",
+						           name, info->Adapter[index].Index);
+					} else {
+						wpa_printf(MSG_DEBUG, "DHCP_RENEW: IP release failed "
+						           "for Name=%s, Index=%ld",
+						           name, info->Adapter[index].Index);
+					}
+
+					if (IpRenewAddress(&info->Adapter[index]) == NO_ERROR) {
+						wpa_printf(MSG_DEBUG, "DHCP_RENEW: IP renew succeeded "
+						           "for Name=%s, Index=%ld",
+						           name, info->Adapter[index].Index);
+					} else {
+						wpa_printf(MSG_DEBUG, "DHCP_RENEW: IP renew failed "
+						           "for Name=%s, Index=%ld",
+						           name, info->Adapter[index].Index);
+					}
+				}
+			} else {
+				wpa_printf(MSG_DEBUG, "DHCP_RENEW: GetInterfaceInfo failed");
+			}
+			os_free(info);
+		} else {
+			wpa_printf(MSG_DEBUG, "DHCP_RENEW: GetInterfaceInfo failed");
+		}
+	}
+#endif /* CONFIG_FORCE_DHCP_RENEW */
 
 	if (state == WPA_COMPLETED &&
 	    os_reltime_initialized(&wpa_s->roam_start)) {

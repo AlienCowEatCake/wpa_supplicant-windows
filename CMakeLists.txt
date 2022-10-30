@@ -44,6 +44,8 @@ endif()
 set(COMPILE_DEFINITIONS
     VERSION_STR_POSTFIX=" Windows port, iface=${WPAS_CTRL_IFACE}"
     GIT_VERSION_STR_POSTFIX=", commit=${GIT_REVISION_}"
+    CONFIG_FORCE_DHCP_RENEW
+    CONFIG_L2_IP_IPHLPAPI
     CONFIG_NATIVE_WINDOWS
     CONFIG_ANSI_C_EXTRA
     CONFIG_WINPCAP
@@ -333,6 +335,7 @@ target_link_libraries(
     wpcap
     libssl
     crypt32
+    iphlpapi
 )
 add_dependencies(wpa_supplicant headers)
 if(WPAS_STATIC_RUNTIME)
@@ -362,6 +365,7 @@ target_link_libraries(
     wpcap
     libssl
     crypt32
+    iphlpapi
 )
 add_dependencies(wpasvc headers)
 if(WPAS_STATIC_RUNTIME)
@@ -392,6 +396,7 @@ target_link_libraries(
     wpcap
     libssl
     crypt32
+    iphlpapi
 )
 add_dependencies(eapol_test headers)
 set_target_properties(eapol_test PROPERTIES EXCLUDE_FROM_ALL TRUE)
@@ -421,6 +426,7 @@ target_link_libraries(
     wpcap
     libssl
     crypt32
+    iphlpapi
 )
 add_dependencies(preauth_test headers)
 set_target_properties(preauth_test PROPERTIES EXCLUDE_FROM_ALL TRUE)
@@ -469,6 +475,7 @@ if(WPAS_CTRL_IFACE STREQUAL "standalone")
         packet
         wpcap
         libssl
+        iphlpapi
     )
 else()
     list(APPEND EXTRA_GUI_SOURCES

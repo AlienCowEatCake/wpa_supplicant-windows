@@ -1495,6 +1495,11 @@ static void wpa_driver_ndis_poll_timeout(void *eloop_ctx, void *timeout_ctx)
 #ifndef _WIN32_WCE
 	poll = 1;
 #endif /* _WIN32_WCE */
+#else /* CONFIG_NDIS_EVENTS_INTEGRATED */
+#ifndef _WIN32_WCE
+	if (!drv->events)
+		poll = 1;
+#endif /* _WIN32_WCE */
 #endif /* CONFIG_NDIS_EVENTS_INTEGRATED */
 
 	if (poll) {

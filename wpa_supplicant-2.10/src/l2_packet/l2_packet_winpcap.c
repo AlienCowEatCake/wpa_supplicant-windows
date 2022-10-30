@@ -27,6 +27,9 @@
  */
 
 #include "includes.h"
+#ifdef CONFIG_L2_IP_IPHLPAPI
+#include <iphlpapi.h>
+#endif /* CONFIG_L2_IP_IPHLPAPI */
 #include <pcap.h>
 
 #include "common.h"
@@ -318,6 +321,44 @@ int l2_packet_get_ip_addr(struct l2_packet_data *l2, char *buf, size_t len)
 	struct sockaddr_in *saddr;
 	int found = 0;
 	char err[PCAP_ERRBUF_SIZE + 1];
+
+#ifdef CONFIG_L2_IP_IPHLPAPI
+	/*
+	 * On Win98 pcap_findalldevs returns devices with "0.0.0.0"
+	 * instead of a real IP address. In addition to the absence of
+	 * a result, call to this function leads to a system freeze for
+	 * a second. So we will try an alternative API.
+	 */
+	ULONG info_len = sizeof(IP_ADAPTER_INFO);
+	PIP_ADAPTER_INFO info = os_malloc(info_len);
+
+	if (GetAdaptersInfo(info, &info_len) == ERROR_BUFFER_OVERFLOW) {
+		os_free(info);
+		info = os_malloc(info_len);
+	}
+
+	if (GetAdaptersInfo(info, &info_len) == NO_ERROR) {
+		PIP_ADAPTER_INFO adapter;
+		for (adapter = info; adapter; adapter = adapter->Next) {
+			if (os_memcmp(adapter->Address, l2->own_addr, sizeof(l2->own_addr)) != 0)
+				continue;
+
+			if (adapter->CurrentIpAddress)
+				os_strlcpy(buf, adapter->CurrentIpAddress->IpAddress.String, len);
+			else
+				os_strlcpy(buf, adapter->IpAddressList.IpAddress.String, len);
+
+			if (os_strncmp(buf, "0.0.0.0", len) != 0)
+				found = 1;
+			break;
+		}
+	}
+
+	os_free(info);
+
+	if (found)
+		return 0;
+#endif /* CONFIG_L2_IP_IPHLPAPI */
 
 	if (pcap_findalldevs(&devs, err) < 0) {
 		wpa_printf(MSG_DEBUG, "pcap_findalldevs: %s\n", err);
