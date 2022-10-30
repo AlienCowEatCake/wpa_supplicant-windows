@@ -605,10 +605,10 @@ static void bgscan_learn_notify_signal_change(void *priv, int above,
 
 
 const struct bgscan_ops bgscan_learn_ops = {
-	.name = "learn",
-	.init = bgscan_learn_init,
-	.deinit = bgscan_learn_deinit,
-	.notify_scan = bgscan_learn_notify_scan,
-	.notify_beacon_loss = bgscan_learn_notify_beacon_loss,
-	.notify_signal_change = bgscan_learn_notify_signal_change,
+	"learn",
+	bgscan_learn_init,
+	bgscan_learn_deinit,
+	bgscan_learn_notify_scan,
+	bgscan_learn_notify_beacon_loss,
+	bgscan_learn_notify_signal_change,
 };

@@ -97,8 +97,8 @@ static int autoscan_exponential_notify_scan(void *priv,
 
 
 const struct autoscan_ops autoscan_exponential_ops = {
-	.name = "exponential",
-	.init = autoscan_exponential_init,
-	.deinit = autoscan_exponential_deinit,
-	.notify_scan = autoscan_exponential_notify_scan,
+	"exponential",
+	autoscan_exponential_init,
+	autoscan_exponential_deinit,
+	autoscan_exponential_notify_scan,
 };

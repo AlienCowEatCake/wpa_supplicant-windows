@@ -1,0 +1,69 @@
+From 1e0e1ece5f5cc6711f5fea12ba7e8124bd08d245 Mon Sep 17 00:00:00 2001
+From: Peter Zhigalov <peter.zhigalov@gmail.com>
+Date: Sun, 30 Oct 2022 21:33:37 +0700
+Subject: [PATCH 10/10] Windows/VS2005 port, part 3
+
+---
+ wpa_supplicant/autoscan_exponential.c |  8 ++++----
+ wpa_supplicant/autoscan_periodic.c    |  8 ++++----
+ wpa_supplicant/bgscan_learn.c         | 12 ++++++------
+ 3 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/wpa_supplicant/autoscan_exponential.c b/wpa_supplicant/autoscan_exponential.c
+index 424477b..1208e70 100644
+--- a/wpa_supplicant/autoscan_exponential.c
++++ b/wpa_supplicant/autoscan_exponential.c
+@@ -97,8 +97,8 @@ static int autoscan_exponential_notify_scan(void *priv,
+ 
+ 
+ const struct autoscan_ops autoscan_exponential_ops = {
+-	.name = "exponential",
+-	.init = autoscan_exponential_init,
+-	.deinit = autoscan_exponential_deinit,
+-	.notify_scan = autoscan_exponential_notify_scan,
++	"exponential",
++	autoscan_exponential_init,
++	autoscan_exponential_deinit,
++	autoscan_exponential_notify_scan,
+ };
+diff --git a/wpa_supplicant/autoscan_periodic.c b/wpa_supplicant/autoscan_periodic.c
+index 102d723..7096066 100644
+--- a/wpa_supplicant/autoscan_periodic.c
++++ b/wpa_supplicant/autoscan_periodic.c
+@@ -78,8 +78,8 @@ static int autoscan_periodic_notify_scan(void *priv,
+ 
+ 
+ const struct autoscan_ops autoscan_periodic_ops = {
+-	.name = "periodic",
+-	.init = autoscan_periodic_init,
+-	.deinit = autoscan_periodic_deinit,
+-	.notify_scan = autoscan_periodic_notify_scan,
++	"periodic",
++	autoscan_periodic_init,
++	autoscan_periodic_deinit,
++	autoscan_periodic_notify_scan,
+ };
+diff --git a/wpa_supplicant/bgscan_learn.c b/wpa_supplicant/bgscan_learn.c
+index cb732f7..847ae7c 100644
+--- a/wpa_supplicant/bgscan_learn.c
++++ b/wpa_supplicant/bgscan_learn.c
+@@ -605,10 +605,10 @@ static void bgscan_learn_notify_signal_change(void *priv, int above,
+ 
+ 
+ const struct bgscan_ops bgscan_learn_ops = {
+-	.name = "learn",
+-	.init = bgscan_learn_init,
+-	.deinit = bgscan_learn_deinit,
+-	.notify_scan = bgscan_learn_notify_scan,
+-	.notify_beacon_loss = bgscan_learn_notify_beacon_loss,
+-	.notify_signal_change = bgscan_learn_notify_signal_change,
++	"learn",
++	bgscan_learn_init,
++	bgscan_learn_deinit,
++	bgscan_learn_notify_scan,
++	bgscan_learn_notify_beacon_loss,
++	bgscan_learn_notify_signal_change,
+ };
+-- 
+2.30.2
+

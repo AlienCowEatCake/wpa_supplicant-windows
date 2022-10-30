@@ -72,7 +72,7 @@ set(COMPILE_DEFINITIONS
     EAP_TLS_OPENSSL
     CONFIG_SHA256
     CONFIG_NO_SOCKLEN_T_TYPEDEF
-    TLS_DEFAULT_CIPHERS="ALL"
+    TLS_DEFAULT_CIPHERS="ALL@SECLEVEL=0"
     _CRT_SECURE_NO_DEPRECATE
     CONFIG_WPS
     EAP_WSC
@@ -94,6 +94,24 @@ set(COMPILE_DEFINITIONS
     CONFIG_BGSCAN
     CONFIG_BGSCAN_SIMPLE
     CONFIG_WEP
+    CONFIG_HT_OVERRIDES
+    CONFIG_VHT_OVERRIDES
+    CONFIG_OCV
+    CONFIG_TLSV11
+    CONFIG_TLSV12
+    CONFIG_DELAYED_MIC_ERROR_REPORT
+    CONFIG_WNM
+    CONFIG_AUTOSCAN_EXPONENTIAL
+    CONFIG_AUTOSCAN_PERIODIC
+    CONFIG_AUTOSCAN
+    CONFIG_OWE
+    CONFIG_HMAC_SHA384_KDF
+    CONFIG_HMAC_SHA512_KDF
+    CONFIG_SHA384
+    CONFIG_SHA512
+    CONFIG_SUITEB
+    CONFIG_SUITEB192
+    CONFIG_BGSCAN_LEARN
 )
 if(WPAS_CTRL_IFACE STREQUAL "pipe")
     list(APPEND COMPILE_DEFINITIONS CONFIG_CTRL_IFACE CONFIG_CTRL_IFACE_NAMED_PIPE)
@@ -116,6 +134,7 @@ set(COMMON_SOURCES
     "${BASE_DIR}/src/common/dragonfly.c"
     "${BASE_DIR}/src/common/hw_features_common.c"
     "${BASE_DIR}/src/common/ieee802_11_common.c"
+    "${BASE_DIR}/src/common/ocv.c"
     "${BASE_DIR}/src/common/sae.c"
     "${BASE_DIR}/src/common/sae_pk.c"
     "${BASE_DIR}/src/common/wpa_common.c"
@@ -136,6 +155,10 @@ set(COMMON_SOURCES
     "${BASE_DIR}/src/crypto/sha256-kdf.c"
     "${BASE_DIR}/src/crypto/sha256-prf.c"
     "${BASE_DIR}/src/crypto/sha256-tlsprf.c"
+    "${BASE_DIR}/src/crypto/sha384-kdf.c"
+    "${BASE_DIR}/src/crypto/sha384-prf.c"
+    "${BASE_DIR}/src/crypto/sha512-kdf.c"
+    "${BASE_DIR}/src/crypto/sha512-prf.c"
     "${BASE_DIR}/src/crypto/tls_openssl.c"
     "${BASE_DIR}/src/crypto/tls_openssl_ocsp.c"
     "${BASE_DIR}/src/drivers/driver_common.c"
@@ -215,7 +238,11 @@ set(COMMON_SOURCES
     "${BASE_DIR}/src/wps/wps_dev_attr.c"
     "${BASE_DIR}/src/wps/wps_enrollee.c"
     "${BASE_DIR}/src/wps/wps_registrar.c"
+    "${BASE_DIR}/wpa_supplicant/autoscan.c"
+    "${BASE_DIR}/wpa_supplicant/autoscan_exponential.c"
+    "${BASE_DIR}/wpa_supplicant/autoscan_periodic.c"
     "${BASE_DIR}/wpa_supplicant/bgscan.c"
+    "${BASE_DIR}/wpa_supplicant/bgscan_learn.c"
     "${BASE_DIR}/wpa_supplicant/bgscan_simple.c"
     "${BASE_DIR}/wpa_supplicant/bss.c"
     "${BASE_DIR}/wpa_supplicant/bssid_ignore.c"
@@ -229,6 +256,7 @@ set(COMMON_SOURCES
     "${BASE_DIR}/wpa_supplicant/scan.c"
     "${BASE_DIR}/wpa_supplicant/twt.c"
     "${BASE_DIR}/wpa_supplicant/wmm_ac.c"
+    "${BASE_DIR}/wpa_supplicant/wnm_sta.c"
     "${BASE_DIR}/wpa_supplicant/wpa_supplicant.c"
     "${BASE_DIR}/wpa_supplicant/wpas_glue.c"
     "${BASE_DIR}/wpa_supplicant/wpas_kay.c"

@@ -78,8 +78,8 @@ static int autoscan_periodic_notify_scan(void *priv,
 
 
 const struct autoscan_ops autoscan_periodic_ops = {
-	.name = "periodic",
-	.init = autoscan_periodic_init,
-	.deinit = autoscan_periodic_deinit,
-	.notify_scan = autoscan_periodic_notify_scan,
+	"periodic",
+	autoscan_periodic_init,
+	autoscan_periodic_deinit,
+	autoscan_periodic_notify_scan,
 };
