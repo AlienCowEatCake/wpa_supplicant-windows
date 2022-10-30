@@ -5,12 +5,15 @@
 #include <QApplication>
 #include <QPointer>
 
+#define WPA_DEBUG_H
 #include "includes.h"
+#undef WPA_DEBUG_H
 #include "common/wpa_ctrl.h"
 extern "C" {
 #include "ctrl_iface.h"
 #include "eloop.h"
 #include "wpa_supplicant_i.h"
+#include "utils/wpa_debug.h"
 // main_winsvc.c
 int wpa_supplicant_thread(void);
 int wpa_supplicant_run_call(struct wpa_global *global);
@@ -56,7 +59,7 @@ private:
 
 }
 
-#if 1//ndef CONFIG_NO_STDOUT_DEBUG
+#ifndef NDEBUG
 #define SCOPE_LOG(S) const ScopedLogger scoped_logger((S))
 #define SCOPE_LOG_ARG(S, A) const ScopedLogger scoped_logger((S), (A))
 #define SCOPE_LOG_TRACE(D) scoped_logger.trace((D))
@@ -79,7 +82,32 @@ struct ctrl_iface_global_priv
 struct wpa_ctrl
 {
 	QByteArray ctrl_path;
+	bool attached;
+	int debug_level;
+	QList<QByteArray> messages;
+
+	wpa_ctrl()
+		: attached(false)
+		, debug_level(MSG_INFO)
+	{}
 };
+
+extern "C" {
+
+static void wpa_supplicant_ctrl_iface_msg_cb(void *ctx, int level, wpa_msg_type type, const char *txt, size_t len)
+{
+	wpa_supplicant *wpa_s = (wpa_supplicant *)ctx;
+	if (wpa_s == NULL || wpa_s->ctrl_iface == NULL)
+		return;
+
+	StandaloneSupplicant *s = StandaloneSupplicant::instance();
+	if (!s->isRunning())
+		return;
+
+	s->wpa_supplicant_ctrl_iface_send(wpa_s->ctrl_iface, level, txt, len);
+}
+
+}
 
 StandaloneSupplicant::StandaloneSupplicant(QObject *parent)
 	: QThread(parent)
@@ -122,6 +150,21 @@ StandaloneSupplicant *StandaloneSupplicant::instance()
 	return s;
 }
 
+void StandaloneSupplicant::wpa_supplicant_ctrl_iface_send(ctrl_iface_priv *priv, int level, const char *buf, size_t len)
+{
+	SCOPE_LOG_ARG(__FUNCTION__, QByteArray(buf, len));
+	m_wpa_ctrls_lock.lockForWrite();
+	QByteArray message = QString::fromLatin1("<%1>").arg(level).toLatin1() + QByteArray(buf, len);
+	for(QList<wpa_ctrl*>::Iterator it = m_wpa_ctrls.begin(); it != m_wpa_ctrls.end(); ++it) {
+		if ((*it)->ctrl_path != priv->wpa_s->ifname)
+			continue;
+		if (level < (*it)->debug_level)
+			continue;
+		(*it)->messages.append(message);
+	}
+	m_wpa_ctrls_lock.unlock();
+}
+
 int StandaloneSupplicant::wpa_supplicant_run_call(wpa_global *global)
 {
 	m_supplicant_running = true;
@@ -136,6 +179,7 @@ void StandaloneSupplicant::wpa_supplicant_ctrl_iface_init(ctrl_iface_priv *priv)
 	m_ctrl_ifaces_lock.lockForWrite();
 	m_ctrl_ifaces.append(priv);
 	m_ctrl_ifaces_lock.unlock();
+	wpa_msg_register_cb(&wpa_supplicant_ctrl_iface_msg_cb);
 }
 
 void StandaloneSupplicant::wpa_supplicant_ctrl_iface_deinit(ctrl_iface_priv *priv)
@@ -172,11 +216,17 @@ void StandaloneSupplicant::wpa_supplicant_global_ctrl_iface_deinit(ctrl_iface_gl
 void StandaloneSupplicant::wpa_ctrl_open(wpa_ctrl *ctrl)
 {
 	SCOPE_LOG_ARG(__FUNCTION__, QByteArray(ctrl->ctrl_path));
+	m_wpa_ctrls_lock.lockForWrite();
+	m_wpa_ctrls.append(ctrl);
+	m_wpa_ctrls_lock.unlock();
 }
 
 void StandaloneSupplicant::wpa_ctrl_close(wpa_ctrl *ctrl)
 {
 	SCOPE_LOG_ARG(__FUNCTION__, QByteArray(ctrl->ctrl_path));
+	m_wpa_ctrls_lock.lockForWrite();
+	m_wpa_ctrls.removeOne(ctrl);
+	m_wpa_ctrls_lock.unlock();
 }
 
 int StandaloneSupplicant::wpa_ctrl_request(wpa_ctrl *ctrl, const char *cmd, size_t cmd_len, char *reply, size_t *reply_len)
@@ -262,6 +312,9 @@ int StandaloneSupplicant::wpa_ctrl_request(wpa_ctrl *ctrl, const char *cmd, size
 int StandaloneSupplicant::wpa_ctrl_attach(wpa_ctrl *ctrl)
 {
 	SCOPE_LOG_ARG(__FUNCTION__, QByteArray(ctrl->ctrl_path));
+	m_wpa_ctrls_lock.lockForWrite();
+	ctrl->attached = true;
+	m_wpa_ctrls_lock.unlock();
 	wpa_supplicant *wpa_s = get_supplicant(ctrl);
 	if (wpa_s)
 		eapol_sm_notify_ctrl_attached(wpa_s->eapol);
@@ -271,7 +324,38 @@ int StandaloneSupplicant::wpa_ctrl_attach(wpa_ctrl *ctrl)
 int StandaloneSupplicant::wpa_ctrl_detach(wpa_ctrl *ctrl)
 {
 	SCOPE_LOG_ARG(__FUNCTION__, QByteArray(ctrl->ctrl_path));
+	m_wpa_ctrls_lock.lockForWrite();
+	ctrl->attached = false;
+	ctrl->messages.clear();
+	m_wpa_ctrls_lock.unlock();
 	return 0;
+}
+
+int StandaloneSupplicant::wpa_ctrl_recv(wpa_ctrl *ctrl, char *reply, size_t *reply_len)
+{
+	SCOPE_LOG_ARG(__FUNCTION__, QByteArray(ctrl->ctrl_path));
+	int result = 0;
+	m_wpa_ctrls_lock.lockForWrite();
+	if (ctrl->messages.empty()) {
+		*reply_len = 0;
+		result = -1;
+	} else {
+		const QByteArray &message = ctrl->messages.first();
+		*reply_len = qMin<size_t>(*reply_len, message.size());
+		memcpy(reply, message.constData(), *reply_len);
+		ctrl->messages.removeFirst();
+	}
+	m_wpa_ctrls_lock.unlock();
+	return result;
+}
+
+int StandaloneSupplicant::wpa_ctrl_pending(wpa_ctrl *ctrl)
+{
+	SCOPE_LOG_ARG(__FUNCTION__, QByteArray(ctrl->ctrl_path));
+	m_wpa_ctrls_lock.lockForRead();
+	int result = ctrl->messages.size();
+	m_wpa_ctrls_lock.unlock();
+	return result;
 }
 
 void StandaloneSupplicant::stop()
@@ -390,7 +474,10 @@ int wpa_ctrl_detach(struct wpa_ctrl *ctrl)
 
 int wpa_ctrl_recv(struct wpa_ctrl *ctrl, char *reply, size_t *reply_len)
 {
-	return -1;
+	StandaloneSupplicant *s = StandaloneSupplicant::instance();
+	if (!s->isRunning())
+		return -1;
+	return s->wpa_ctrl_recv(ctrl, reply, reply_len);
 }
 
 int wpa_ctrl_pending(struct wpa_ctrl *ctrl)
@@ -398,7 +485,7 @@ int wpa_ctrl_pending(struct wpa_ctrl *ctrl)
 	StandaloneSupplicant *s = StandaloneSupplicant::instance();
 	if (!s->isRunning())
 		return -1;
-	return 0;
+	return s->wpa_ctrl_pending(ctrl);
 }
 
 int wpa_ctrl_get_fd(struct wpa_ctrl *ctrl)

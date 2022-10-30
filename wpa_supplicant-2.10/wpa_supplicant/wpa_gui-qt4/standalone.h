@@ -25,6 +25,9 @@ private:
 public:
 	static StandaloneSupplicant *instance();
 
+	// monitor
+	void wpa_supplicant_ctrl_iface_send(ctrl_iface_priv *priv, int level, const char *buf, size_t len);
+
 	// service
 	int wpa_supplicant_run_call(struct wpa_global *global);
 
@@ -41,6 +44,8 @@ public:
 	int wpa_ctrl_request(wpa_ctrl *ctrl, const char *cmd, size_t cmd_len, char *reply, size_t *reply_len);
 	int wpa_ctrl_attach(wpa_ctrl *ctrl);
 	int wpa_ctrl_detach(wpa_ctrl *ctrl);
+	int wpa_ctrl_recv(wpa_ctrl *ctrl, char *reply, size_t *reply_len);
+	int wpa_ctrl_pending(wpa_ctrl *ctrl);
 
 public:
 	void stop();
@@ -54,6 +59,8 @@ private:
 	QList<ctrl_iface_priv*> m_ctrl_ifaces;
 	QReadWriteLock m_global_lock;
 	ctrl_iface_global_priv *m_global;
+	QReadWriteLock m_wpa_ctrls_lock;
+	QList<wpa_ctrl*> m_wpa_ctrls;
 	bool m_supplicant_running;
 };
 
