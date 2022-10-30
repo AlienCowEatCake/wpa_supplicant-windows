@@ -1,0 +1,40 @@
+From 8e4edd4ed9c613695c5932908accc5541c29026e Mon Sep 17 00:00:00 2001
+From: Peter Zhigalov <peter.zhigalov@gmail.com>
+Date: Sun, 30 Oct 2022 21:35:47 +0700
+Subject: [PATCH 11/11] Fix Windows logging
+
+---
+ src/utils/wpa_debug.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/src/utils/wpa_debug.c b/src/utils/wpa_debug.c
+index a338a20..4f00676 100644
+--- a/src/utils/wpa_debug.c
++++ b/src/utils/wpa_debug.c
+@@ -564,6 +564,23 @@ int wpa_debug_open_file(const char *path)
+ 
+ 	out_fd = open(path, O_CREAT | O_APPEND | O_WRONLY,
+ 		      S_IRUSR | S_IWUSR | S_IRGRP);
++#ifdef CONFIG_NATIVE_WINDOWS
++	if (out_fd < 0 && os_strncasecmp(path, "\\Temp\\", 6) == 0) {
++		char *buf = NULL;
++		char *temp = getenv("TEMP");
++		if (!temp)
++			temp = getenv("TMP");
++
++		if (temp) {
++			size_t buf_len = os_strlen(temp) + os_strlen(path);
++			buf = os_malloc(buf_len);
++			os_snprintf(buf, buf_len, "%s\\%s", temp, path + 6);
++			out_fd = open(buf, O_CREAT | O_APPEND | O_WRONLY,
++					  S_IRUSR | S_IWUSR | S_IRGRP);
++			os_free(buf);
++		}
++	}
++#endif
+ 	if (out_fd < 0) {
+ 		wpa_printf(MSG_ERROR,
+ 			   "%s: Failed to open output file descriptor, using standard output",
+-- 
+2.30.2
+
