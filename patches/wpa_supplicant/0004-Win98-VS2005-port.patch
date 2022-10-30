@@ -1,0 +1,3986 @@
+From ab9b4f4d9155fcfbdac37771391223cb051bd00a Mon Sep 17 00:00:00 2001
+From: Peter Zhigalov <peter.zhigalov@gmail.com>
+Date: Tue, 25 Oct 2022 04:48:46 +0700
+Subject: [PATCH 4/5] Win98/VS2005 port
+
+---
+ src/common/sae_pk.c                           |   2 +
+ src/common/wpa_ctrl.c                         |   2 +-
+ src/crypto/tls_openssl.c                      |   6 +-
+ src/drivers/driver_ndis.c                     |  16 +-
+ src/l2_packet/l2_packet_winpcap.c             |  55 ++++-
+ src/pae/ieee802_1x_kay.c                      | 102 ++++----
+ src/utils/base64.c                            |   2 +
+ src/utils/build_config.h                      |   9 +
+ src/utils/common.h                            |  29 ++-
+ src/utils/edit_simple.c                       |  14 ++
+ src/utils/eloop.c                             |   8 +-
+ src/utils/includes.h                          |  54 +++++
+ src/utils/inet_ntop.h                         | 192 ++++++++++++++++
+ src/utils/inet_pton.h                         | 217 ++++++++++++++++++
+ src/utils/pcsc_funcs.c                        |  31 +--
+ src/utils/trace.h                             |   2 +-
+ src/utils/wpa_debug.c                         |  17 ++
+ src/utils/wpa_debug.h                         |  12 +
+ wpa_supplicant/autoscan_exponential.c         |   8 +-
+ wpa_supplicant/autoscan_periodic.c            |   8 +-
+ wpa_supplicant/bgscan_learn.c                 |  12 +-
+ wpa_supplicant/bgscan_simple.c                |  12 +-
+ wpa_supplicant/ctrl_iface.c                   |  16 +-
+ wpa_supplicant/ctrl_iface_named_pipe.c        |  52 +++++
+ wpa_supplicant/eapol_test.c                   |  13 +-
+ wpa_supplicant/main_winsvc.c                  |  88 +++++++
+ wpa_supplicant/nmake.mak                      |  71 ++++--
+ .../vs2005/eapol_test/eapol_test.vcproj       | 158 ++++++++++---
+ .../vs2005/win_if_list/win_if_list.vcproj     |  10 +-
+ wpa_supplicant/vs2005/wpa_cli/wpa_cli.vcproj  |  20 +-
+ .../wpa_passphrase/wpa_passphrase.vcproj      |  35 +--
+ .../wpa_supplicant/wpa_supplicant.vcproj      | 164 ++++++++++---
+ wpa_supplicant/vs2005/wpasvc/wpasvc.vcproj    | 216 ++++++++++++-----
+ wpa_supplicant/win_if_list.c                  |   2 +-
+ wpa_supplicant/wpa_cli.c                      |   4 +-
+ wpa_supplicant/wpa_gui-qt4/addinterface.cpp   |   9 +-
+ wpa_supplicant/wpa_gui-qt4/icons/ap.png       | Bin 0 -> 816 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/group.png    | Bin 0 -> 1269 bytes
+ .../wpa_gui-qt4/icons/invitation.png          | Bin 0 -> 1458 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/laptop.png   | Bin 0 -> 1939 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/status/0.png | Bin 0 -> 129 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/status/1.png | Bin 0 -> 130 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/status/2.png | Bin 0 -> 130 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/status/3.png | Bin 0 -> 130 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/status/4.png | Bin 0 -> 127 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/wpa_gui.ico  | Bin 0 -> 34494 bytes
+ wpa_supplicant/wpa_gui-qt4/icons/wpa_gui.png  | Bin 0 -> 744 bytes
+ wpa_supplicant/wpa_gui-qt4/icons_png.qrc      |  10 +-
+ wpa_supplicant/wpa_gui-qt4/icons_status.qrc   |  12 +
+ wpa_supplicant/wpa_gui-qt4/networkconfig.cpp  |   5 +
+ wpa_supplicant/wpa_gui-qt4/peers.cpp          |   5 +
+ wpa_supplicant/wpa_gui-qt4/scanresults.cpp    |   5 +
+ wpa_supplicant/wpa_gui-qt4/wpa_gui.pro        |  17 +-
+ wpa_supplicant/wpa_gui-qt4/wpa_gui.rc         |   1 +
+ wpa_supplicant/wpa_gui-qt4/wpagui.cpp         |  86 +++++--
+ wpa_supplicant/wpa_supplicant.c               |  58 +++++
+ 56 files changed, 1561 insertions(+), 306 deletions(-)
+ create mode 100644 src/utils/inet_ntop.h
+ create mode 100644 src/utils/inet_pton.h
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/ap.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/group.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/invitation.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/laptop.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/0.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/1.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/2.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/3.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/status/4.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/wpa_gui.ico
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/wpa_gui.png
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/icons_status.qrc
+ create mode 100644 wpa_supplicant/wpa_gui-qt4/wpa_gui.rc
+
+diff --git a/src/common/sae_pk.c b/src/common/sae_pk.c
+index df79e5f..fcebf67 100644
+--- a/src/common/sae_pk.c
++++ b/src/common/sae_pk.c
+@@ -7,7 +7,9 @@
+  */
+ 
+ #include "utils/includes.h"
++#if !defined(_MSC_VER) || (_MSC_VER >= 1600)
+ #include <stdint.h>
++#endif
+ 
+ #include "utils/common.h"
+ #include "utils/base64.h"
+diff --git a/src/common/wpa_ctrl.c b/src/common/wpa_ctrl.c
+index 40a9795..c593082 100644
+--- a/src/common/wpa_ctrl.c
++++ b/src/common/wpa_ctrl.c
+@@ -458,7 +458,7 @@ struct wpa_ctrl * wpa_ctrl_open(const char *ctrl_path)
+ char * wpa_ctrl_get_remote_ifname(struct wpa_ctrl *ctrl)
+ {
+ #define WPA_CTRL_MAX_PS_NAME 100
+-	static char ps[WPA_CTRL_MAX_PS_NAME] = {};
++	static char ps[WPA_CTRL_MAX_PS_NAME] = {'\0'};
+ 	os_snprintf(ps, WPA_CTRL_MAX_PS_NAME, "%s/%s",
+ 		    ctrl->remote_ip, ctrl->remote_ifname);
+ 	return ps;
+diff --git a/src/crypto/tls_openssl.c b/src/crypto/tls_openssl.c
+index ad3aa1a..c41d8b0 100644
+--- a/src/crypto/tls_openssl.c
++++ b/src/crypto/tls_openssl.c
+@@ -349,7 +349,8 @@ static X509_STORE * tls_crl_cert_reload(const char *ca_cert, int check_crl)
+ }
+ 
+ 
+-#ifdef CONFIG_NATIVE_WINDOWS
++/*#ifdef CONFIG_NATIVE_WINDOWS*/
++#if 0
+ 
+ /* Windows CryptoAPI and access to certificate stores */
+ #include <wincrypt.h>
+@@ -2794,7 +2795,8 @@ static int tls_connection_ca_cert(struct tls_data *data,
+ 	}
+ #endif /* ANDROID */
+ 
+-#ifdef CONFIG_NATIVE_WINDOWS
++/*#ifdef CONFIG_NATIVE_WINDOWS*/
++#if 0
+ 	if (ca_cert && tls_cryptoapi_ca_cert(ssl_ctx, conn->ssl, ca_cert) ==
+ 	    0) {
+ 		wpa_printf(MSG_DEBUG, "OpenSSL: Added CA certificates from "
+diff --git a/src/drivers/driver_ndis.c b/src/drivers/driver_ndis.c
+index b32e009..da0f28b 100644
+--- a/src/drivers/driver_ndis.c
++++ b/src/drivers/driver_ndis.c
+@@ -1495,6 +1495,11 @@ static void wpa_driver_ndis_poll_timeout(void *eloop_ctx, void *timeout_ctx)
+ #ifndef _WIN32_WCE
+ 	poll = 1;
+ #endif /* _WIN32_WCE */
++#else /* CONFIG_NDIS_EVENTS_INTEGRATED */
++#ifndef _WIN32_WCE
++	if (!drv->events)
++		poll = 1;
++#endif /* _WIN32_WCE */
+ #endif /* CONFIG_NDIS_EVENTS_INTEGRATED */
+ 
+ 	if (poll) {
+@@ -2769,6 +2774,9 @@ static int wpa_driver_ndis_adapter_open(struct wpa_driver_ndis_data *drv)
+ 	char ifname[128];
+ 	os_snprintf(ifname, sizeof(ifname), "\\Device\\NPF_%s", drv->ifname);
+ 	drv->adapter = PacketOpenAdapter(ifname);
++	/* Win98 has ifnames without prefixes */
++	if (drv->adapter == NULL)
++		drv->adapter = PacketOpenAdapter(drv->ifname);
+ 	if (drv->adapter == NULL) {
+ 		wpa_printf(MSG_DEBUG, "NDIS: PacketOpenAdapter failed for "
+ 			   "'%s'", ifname);
+@@ -2877,11 +2885,15 @@ static void * wpa_driver_ndis_init(void *ctx, const char *ifname)
+ 	drv->events = ndis_events_init(&drv->events_pipe, &drv->event_avail,
+ 				       drv->ifname, drv->adapter_desc);
+ 	if (drv->events == NULL) {
++		/* This is non-fatal error, ndis_events_init not work on Win98 */
++		/*
+ 		wpa_driver_ndis_deinit(drv);
+ 		return NULL;
++		*/
++	} else {
++		eloop_register_event(drv->event_avail, sizeof(drv->event_avail),
++				     wpa_driver_ndis_event_pipe_cb, drv, NULL);
+ 	}
+-	eloop_register_event(drv->event_avail, sizeof(drv->event_avail),
+-			     wpa_driver_ndis_event_pipe_cb, drv, NULL);
+ #endif /* CONFIG_NDIS_EVENTS_INTEGRATED */
+ 
+ #ifdef _WIN32_WCE
+diff --git a/src/l2_packet/l2_packet_winpcap.c b/src/l2_packet/l2_packet_winpcap.c
+index 3452051..e60b4d1 100644
+--- a/src/l2_packet/l2_packet_winpcap.c
++++ b/src/l2_packet/l2_packet_winpcap.c
+@@ -27,6 +27,9 @@
+  */
+ 
+ #include "includes.h"
++#ifdef CONFIG_L2_IP_IPHLPAPI
++#include <iphlpapi.h>
++#endif /* CONFIG_L2_IP_IPHLPAPI */
+ #include <pcap.h>
+ 
+ #include "common.h"
+@@ -220,8 +223,12 @@ struct l2_packet_data * l2_packet_init(
+ 		os_memcpy(l2->own_addr, own_addr, ETH_ALEN);
+ 
+ 	if (l2_packet_init_libpcap(l2, protocol)) {
+-		os_free(l2);
+-		return NULL;
++		os_snprintf(l2->ifname, sizeof(l2->ifname), "%s", ifname);
++		/* Win98 has ifnames without prefixes */
++		if (l2_packet_init_libpcap(l2, protocol)) {
++			os_free(l2);
++			return NULL;
++		}
+ 	}
+ 
+ 	if (!rx_callback)
+@@ -315,6 +322,44 @@ int l2_packet_get_ip_addr(struct l2_packet_data *l2, char *buf, size_t len)
+ 	int found = 0;
+ 	char err[PCAP_ERRBUF_SIZE + 1];
+ 
++#ifdef CONFIG_L2_IP_IPHLPAPI
++	/*
++	 * On Win98 pcap_findalldevs returns devices with "0.0.0.0"
++	 * instead of a real IP address. In addition to the absence of
++	 * a result, call to this function leads to a system freeze for
++	 * a second. So we will try an alternative API.
++	 */
++	ULONG info_len = sizeof(IP_ADAPTER_INFO);
++	PIP_ADAPTER_INFO info = os_malloc(info_len);
++
++	if (GetAdaptersInfo(info, &info_len) == ERROR_BUFFER_OVERFLOW) {
++		os_free(info);
++		info = os_malloc(info_len);
++	}
++
++	if (GetAdaptersInfo(info, &info_len) == NO_ERROR) {
++		PIP_ADAPTER_INFO adapter;
++		for (adapter = info; adapter; adapter = adapter->Next) {
++			if (os_memcmp(adapter->Address, l2->own_addr, sizeof(l2->own_addr)) != 0)
++				continue;
++
++			if (adapter->CurrentIpAddress)
++				os_strlcpy(buf, adapter->CurrentIpAddress->IpAddress.String, len);
++			else
++				os_strlcpy(buf, adapter->IpAddressList.IpAddress.String, len);
++
++			if (os_strncmp(buf, "0.0.0.0", len) != 0)
++				found = 1;
++			break;
++		}
++	}
++
++	os_free(info);
++
++	if (found)
++		return 0;
++#endif /* CONFIG_L2_IP_IPHLPAPI */
++
+ 	if (pcap_findalldevs(&devs, err) < 0) {
+ 		wpa_printf(MSG_DEBUG, "pcap_findalldevs: %s\n", err);
+ 		return -1;
+@@ -348,3 +393,9 @@ void l2_packet_notify_auth_start(struct l2_packet_data *l2)
+ 	if (l2)
+ 		SetEvent(l2->rx_notify);
+ }
++
++int l2_packet_set_packet_filter(struct l2_packet_data *l2,
++				enum l2_packet_filter_type type)
++{
++	return -1;
++}
+diff --git a/src/pae/ieee802_1x_kay.c b/src/pae/ieee802_1x_kay.c
+index 657de93..3709546 100644
+--- a/src/pae/ieee802_1x_kay.c
++++ b/src/pae/ieee802_1x_kay.c
+@@ -42,17 +42,17 @@ static u8 mka_algo_agility[4] = MKA_ALGO_AGILITY_2009;
+ static struct macsec_ciphersuite cipher_suite_tbl[] = {
+ 	/* GCM-AES-128 */
+ 	{
+-		.id = CS_ID_GCM_AES_128,
+-		.name = CS_NAME_GCM_AES_128,
+-		.capable = MACSEC_CAP_INTEG_AND_CONF_0_30_50,
+-		.sak_len = DEFAULT_SA_KEY_LEN,
++		CS_ID_GCM_AES_128,
++		CS_NAME_GCM_AES_128,
++		MACSEC_CAP_INTEG_AND_CONF_0_30_50,
++		DEFAULT_SA_KEY_LEN,
+ 	},
+ 	/* GCM-AES-256 */
+ 	{
+-		.id = CS_ID_GCM_AES_256,
+-		.name = CS_NAME_GCM_AES_256,
+-		.capable = MACSEC_CAP_INTEG_AND_CONF_0_30_50,
+-		.sak_len = 32,
++		CS_ID_GCM_AES_256,
++		CS_NAME_GCM_AES_256,
++		MACSEC_CAP_INTEG_AND_CONF_0_30_50,
++		32,
+ 	},
+ };
+ #define CS_TABLE_SIZE (ARRAY_SIZE(cipher_suite_tbl))
+@@ -60,15 +60,15 @@ static struct macsec_ciphersuite cipher_suite_tbl[] = {
+ 
+ static struct mka_alg mka_alg_tbl[] = {
+ 	{
+-		.parameter = MKA_ALGO_AGILITY_2009,
++		MKA_ALGO_AGILITY_2009,
+ 
+-		.icv_len = DEFAULT_ICV_LEN,
++		DEFAULT_ICV_LEN,
+ 
+-		.cak_trfm = ieee802_1x_cak_aes_cmac,
+-		.ckn_trfm = ieee802_1x_ckn_aes_cmac,
+-		.kek_trfm = ieee802_1x_kek_aes_cmac,
+-		.ick_trfm = ieee802_1x_ick_aes_cmac,
+-		.icv_hash = ieee802_1x_icv_aes_cmac,
++		ieee802_1x_cak_aes_cmac,
++		ieee802_1x_ckn_aes_cmac,
++		ieee802_1x_kek_aes_cmac,
++		ieee802_1x_ick_aes_cmac,
++		ieee802_1x_icv_aes_cmac,
+ 	},
+ };
+ #define MKA_ALG_TABLE_SIZE (ARRAY_SIZE(mka_alg_tbl))
+@@ -2009,74 +2009,74 @@ struct mka_param_body_handler {
+ static struct mka_param_body_handler mka_body_handler[] = {
+ 	/* Basic parameter set */
+ 	{
+-		.body_tx      = ieee802_1x_mka_encode_basic_body,
+-		.body_rx      = NULL,
+-		.body_length  = ieee802_1x_mka_basic_body_length,
+-		.body_present = ieee802_1x_mka_basic_body_present
++		ieee802_1x_mka_encode_basic_body,
++		NULL,
++		ieee802_1x_mka_basic_body_length,
++		ieee802_1x_mka_basic_body_present
+ 	},
+ 
+ 	/* Live Peer List parameter set */
+ 	{
+-		.body_tx      = ieee802_1x_mka_encode_live_peer_body,
+-		.body_rx      = ieee802_1x_mka_decode_live_peer_body,
+-		.body_length  = ieee802_1x_mka_get_live_peer_length,
+-		.body_present = ieee802_1x_mka_live_peer_body_present
++		ieee802_1x_mka_encode_live_peer_body,
++		ieee802_1x_mka_decode_live_peer_body,
++		ieee802_1x_mka_get_live_peer_length,
++		ieee802_1x_mka_live_peer_body_present
+ 	},
+ 
+ 	/* Potential Peer List parameter set */
+ 	{
+-		.body_tx      = ieee802_1x_mka_encode_potential_peer_body,
+-		.body_rx      = ieee802_1x_mka_decode_potential_peer_body,
+-		.body_length  = ieee802_1x_mka_get_potential_peer_length,
+-		.body_present = ieee802_1x_mka_potential_peer_body_present
++		ieee802_1x_mka_encode_potential_peer_body,
++		ieee802_1x_mka_decode_potential_peer_body,
++		ieee802_1x_mka_get_potential_peer_length,
++		ieee802_1x_mka_potential_peer_body_present
+ 	},
+ 
+ 	/* MACsec SAK Use parameter set */
+ 	{
+-		.body_tx      = ieee802_1x_mka_encode_sak_use_body,
+-		.body_rx      = ieee802_1x_mka_decode_sak_use_body,
+-		.body_length  = ieee802_1x_mka_get_sak_use_length,
+-		.body_present = ieee802_1x_mka_sak_use_body_present
++		ieee802_1x_mka_encode_sak_use_body,
++		ieee802_1x_mka_decode_sak_use_body,
++		ieee802_1x_mka_get_sak_use_length,
++		ieee802_1x_mka_sak_use_body_present
+ 	},
+ 
+ 	/* Distributed SAK parameter set */
+ 	{
+-		.body_tx      = ieee802_1x_mka_encode_dist_sak_body,
+-		.body_rx      = ieee802_1x_mka_decode_dist_sak_body,
+-		.body_length  = ieee802_1x_mka_get_dist_sak_length,
+-		.body_present = ieee802_1x_mka_dist_sak_body_present
++		ieee802_1x_mka_encode_dist_sak_body,
++		ieee802_1x_mka_decode_dist_sak_body,
++		ieee802_1x_mka_get_dist_sak_length,
++		ieee802_1x_mka_dist_sak_body_present
+ 	},
+ 
+ 	/* Distribute CAK parameter set */
+ 	{
+-		.body_tx      = NULL,
+-		.body_rx      = ieee802_1x_mka_decode_dist_cak_body,
+-		.body_length  = NULL,
+-		.body_present = NULL
++		NULL,
++		ieee802_1x_mka_decode_dist_cak_body,
++		NULL,
++		NULL
+ 	},
+ 
+ 	/* KMD parameter set */
+ 	{
+-		.body_tx      = NULL,
+-		.body_rx      = ieee802_1x_mka_decode_kmd_body,
+-		.body_length  = NULL,
+-		.body_present = NULL
++		NULL,
++		ieee802_1x_mka_decode_kmd_body,
++		NULL,
++		NULL
+ 	},
+ 
+ 	/* Announcement parameter set */
+ 	{
+-		.body_tx      = NULL,
+-		.body_rx      = ieee802_1x_mka_decode_announce_body,
+-		.body_length  = NULL,
+-		.body_present = NULL
++		NULL,
++		ieee802_1x_mka_decode_announce_body,
++		NULL,
++		NULL
+ 	},
+ 
+ 	/* ICV Indicator parameter set */
+ 	{
+-		.body_tx      = ieee802_1x_mka_encode_icv_body,
+-		.body_rx      = NULL,
+-		.body_length  = ieee802_1x_mka_get_icv_length,
+-		.body_present = ieee802_1x_mka_icv_body_present
++		ieee802_1x_mka_encode_icv_body,
++		NULL,
++		ieee802_1x_mka_get_icv_length,
++		ieee802_1x_mka_icv_body_present
+ 	},
+ };
+ 
+diff --git a/src/utils/base64.c b/src/utils/base64.c
+index 0d121c1..44f76c9 100644
+--- a/src/utils/base64.c
++++ b/src/utils/base64.c
+@@ -7,7 +7,9 @@
+  */
+ 
+ #include "includes.h"
++#if !defined(_MSC_VER) || (_MSC_VER >= 1600)
+ #include <stdint.h>
++#endif
+ 
+ #include "utils/common.h"
+ #include "os.h"
+diff --git a/src/utils/build_config.h b/src/utils/build_config.h
+index c6f4e43..46d9f82 100644
+--- a/src/utils/build_config.h
++++ b/src/utils/build_config.h
+@@ -36,8 +36,17 @@
+ #define EAP_TTLS
+ #define EAP_GTC
+ #define EAP_OTP
++#define EAP_SIM
+ #define EAP_LEAP
++#define EAP_PSK
++#define EAP_AKA
++#define EAP_FAST
++#define EAP_PAX
+ #define EAP_TNC
++#define EAP_TLS_OPENSSL
++#define CONFIG_SHA256
++#define CONFIG_NO_SOCKLEN_T_TYPEDEF
++#define TLS_DEFAULT_CIPHERS "DEFAULT:!EXP:!LOW"
+ #define _CRT_SECURE_NO_DEPRECATE
+ 
+ #ifdef USE_INTERNAL_CRYPTO
+diff --git a/src/utils/common.h b/src/utils/common.h
+index 45f72bb..530c7d7 100644
+--- a/src/utils/common.h
++++ b/src/utils/common.h
+@@ -9,6 +9,10 @@
+ #ifndef COMMON_H
+ #define COMMON_H
+ 
++#ifdef _MSC_VER
++#define inline __inline
++#endif
++
+ #include "os.h"
+ 
+ #if defined(__linux__) || defined(__GLIBC__)
+@@ -63,7 +67,7 @@ static inline unsigned int bswap_32(unsigned int v)
+ #endif /* __rtems__ */
+ 
+ #ifdef CONFIG_NATIVE_WINDOWS
+-#include <winsock.h>
++#include <winsock2.h>
+ 
+ typedef int socklen_t;
+ 
+@@ -74,10 +78,13 @@ typedef int socklen_t;
+ #endif /* CONFIG_NATIVE_WINDOWS */
+ 
+ #ifdef _MSC_VER
+-#define inline __inline
+-
++#include <io.h>
++#if _MSC_VER < 1900
++#undef snprintf
++#define snprintf _snprintf
+ #undef vsnprintf
+ #define vsnprintf _vsnprintf
++#endif
+ #undef close
+ #define close closesocket
+ #endif /* _MSC_VER */
+@@ -142,6 +149,15 @@ static inline unsigned int wpa_swap_32(unsigned int v)
+ 		((v & 0xff0000) >> 8) | (v >> 24);
+ }
+ 
++static inline u64 wpa_swap_64(u64 v)
++{
++	unsigned int hi = (unsigned int)(v >> 32);
++	unsigned int lo = (unsigned int)(v);
++	hi = wpa_swap_32(hi);
++	lo = wpa_swap_32(lo);
++	return (((u64)(lo)) << 32) | hi;
++}
++
+ #define le_to_host16(n) (n)
+ #define host_to_le16(n) (n)
+ #define be_to_host16(n) wpa_swap_16(n)
+@@ -150,7 +166,10 @@ static inline unsigned int wpa_swap_32(unsigned int v)
+ #define host_to_le32(n) (n)
+ #define be_to_host32(n) wpa_swap_32(n)
+ #define host_to_be32(n) wpa_swap_32(n)
++#define le_to_host64(n) (n)
+ #define host_to_le64(n) (n)
++#define be_to_host64(n) wpa_swap_64(n)
++#define host_to_be64(n) wpa_swap_64(n)
+ 
+ #define WPA_BYTE_SWAP_DEFINED
+ 
+@@ -390,7 +409,11 @@ typedef int socklen_t;
+ #endif
+ 
+ #ifndef __func__
++#ifndef __FUNCTION__
+ #define __func__ "__func__ not defined"
++#else
++#define __func__ __FUNCTION__
++#endif
+ #endif
+ 
+ #ifndef bswap_16
+diff --git a/src/utils/edit_simple.c b/src/utils/edit_simple.c
+index 2ffd1a2..036e5a2 100644
+--- a/src/utils/edit_simple.c
++++ b/src/utils/edit_simple.c
+@@ -60,6 +60,12 @@ static void edit_read_char(int sock, void *eloop_ctx, void *sock_ctx)
+ 	}
+ }
+ 
++#ifdef CONFIG_NATIVE_WINDOWS
++static void edit_read_char_event_cb(void *eloop_ctx, void *sock_ctx)
++{
++	edit_read_char(STDIN_FILENO, eloop_ctx, sock_ctx);
++}
++#endif
+ 
+ int edit_init(void (*cmd_cb)(void *ctx, char *cmd),
+ 	      void (*eof_cb)(void *ctx),
+@@ -69,7 +75,11 @@ int edit_init(void (*cmd_cb)(void *ctx, char *cmd),
+ 	edit_cb_ctx = ctx;
+ 	edit_cmd_cb = cmd_cb;
+ 	edit_eof_cb = eof_cb;
++#ifdef CONFIG_NATIVE_WINDOWS
++	eloop_register_event(GetStdHandle(STD_INPUT_HANDLE), sizeof(HANDLE), edit_read_char_event_cb, NULL, NULL);
++#else
+ 	eloop_register_read_sock(STDIN_FILENO, edit_read_char, NULL, NULL);
++#endif
+ 	ps2 = ps;
+ 
+ 	printf("%s> ", ps2 ? ps2 : "");
+@@ -82,7 +92,11 @@ int edit_init(void (*cmd_cb)(void *ctx, char *cmd),
+ void edit_deinit(const char *history_file,
+ 		 int (*filter_cb)(void *ctx, const char *cmd))
+ {
++#ifdef CONFIG_NATIVE_WINDOWS
++	eloop_unregister_event(GetStdHandle(STD_INPUT_HANDLE), sizeof(HANDLE));
++#else
+ 	eloop_unregister_read_sock(STDIN_FILENO);
++#endif
+ }
+ 
+ 
+diff --git a/src/utils/eloop.c b/src/utils/eloop.c
+index 00b0bef..9ef9961 100644
+--- a/src/utils/eloop.c
++++ b/src/utils/eloop.c
+@@ -44,8 +44,8 @@ struct eloop_sock {
+ 	void *eloop_data;
+ 	void *user_data;
+ 	eloop_sock_handler handler;
+-	WPA_TRACE_REF(eloop);
+-	WPA_TRACE_REF(user);
++	WPA_TRACE_REF(eloop)
++	WPA_TRACE_REF(user)
+ 	WPA_TRACE_INFO
+ };
+ 
+@@ -55,8 +55,8 @@ struct eloop_timeout {
+ 	void *eloop_data;
+ 	void *user_data;
+ 	eloop_timeout_handler handler;
+-	WPA_TRACE_REF(eloop);
+-	WPA_TRACE_REF(user);
++	WPA_TRACE_REF(eloop)
++	WPA_TRACE_REF(user)
+ 	WPA_TRACE_INFO
+ };
+ 
+diff --git a/src/utils/includes.h b/src/utils/includes.h
+index 741fc9c..d23f5dd 100644
+--- a/src/utils/includes.h
++++ b/src/utils/includes.h
+@@ -18,7 +18,15 @@
+ 
+ #include <stdlib.h>
+ #include <stddef.h>
++#if defined(_MSC_VER) && (_MSC_VER < 1800)
++#ifndef __cplusplus
++typedef int bool;
++#define true 1
++#define false 0
++#endif
++#else
+ #include <stdbool.h>
++#endif
+ #include <stdio.h>
+ #include <stdarg.h>
+ #include <string.h>
+@@ -41,6 +49,52 @@
+ #include <sys/uio.h>
+ #include <sys/time.h>
+ #endif /* __vxworks */
++#else
++#include <winsock2.h>
++#include <ws2tcpip.h>
++#ifndef __MINGW32_VERSION
++#include <wspiapi.h>
++#endif
++#include <windows.h>
++
++#include "common.h"
++
++#if defined(_MSC_VER) && (_MSC_VER < 1800)
++static int isblank_impl(int c) { return (c==' ' || c=='\t'); }
++#define isblank isblank_impl
++#endif
++
++#if defined(_MSC_VER) && !defined(STDIN_FILENO)
++#define STDIN_FILENO _fileno(stdin)
++#endif
++
++#include <errno.h>
++#ifndef EOPNOTSUPP
++#define EOPNOTSUPP ENOSYS
++#endif
++#ifndef EAFNOSUPPORT
++#define EAFNOSUPPORT ENOSYS
++#endif
++#ifndef EWOULDBLOCK
++#define EWOULDBLOCK EAGAIN
++#endif
++
++#include <assert.h>
++#include "inet_pton.h"
++#include "inet_ntop.h"
++#define inet_pton inet_pton_impl
++#define inet_ntop inet_ntop_impl
++
++#if defined(_MSC_VER) && !defined(S_IRUSR)
++#define S_IRUSR _S_IREAD
++#endif
++#if defined(_MSC_VER) && !defined(S_IWUSR)
++#define S_IWUSR _S_IWRITE
++#endif
++#if defined(_WIN32) && !defined(S_IRGRP)
++#define S_IRGRP _S_IREAD
++#endif
++
+ #endif /* CONFIG_NATIVE_WINDOWS */
+ 
+ #endif /* INCLUDES_H */
+diff --git a/src/utils/inet_ntop.h b/src/utils/inet_ntop.h
+new file mode 100644
+index 0000000..1ac3d2a
+--- /dev/null
++++ b/src/utils/inet_ntop.h
+@@ -0,0 +1,192 @@
++/*
++ * Copyright (C) 1996-2001  Internet Software Consortium.
++ *
++ * Permission to use, copy, modify, and distribute this software for any
++ * purpose with or without fee is hereby granted, provided that the above
++ * copyright notice and this permission notice appear in all copies.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
++ * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
++ * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
++ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
++ * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
++ * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
++ * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ */
++
++#ifndef INET_NTOP_H
++#define INET_NTOP_H
++
++#ifndef NS_INT16SZ
++#define NS_INT16SZ   2
++#endif
++#ifndef NS_IN6ADDRSZ
++#define NS_IN6ADDRSZ    16
++#endif
++
++/*
++ * WARNING: Don't even consider trying to compile this on a system where
++ * sizeof(int) < 4.  sizeof(int) > 4 is fine; all the world's not a VAX.
++ */
++
++static const char *inet_ntop4(const unsigned char *src, char *dst,
++			      size_t size);
++
++#ifdef AF_INET6
++static const char *inet_ntop6(const unsigned char *src, char *dst,
++			      size_t size);
++#endif
++
++/* char *
++ * isc_net_ntop(af, src, dst, size)
++ *	convert a network format address to presentation format.
++ * return:
++ *	pointer to presentation format address (`dst'), or NULL (see errno).
++ * author:
++ *	Paul Vixie, 1996.
++ */
++static const char *
++inet_ntop_impl(int af, const void *src, char *dst, size_t size)
++{
++	switch (af) {
++	case AF_INET:
++		return (inet_ntop4((const unsigned char *)src, dst, size));
++#ifdef AF_INET6
++	case AF_INET6:
++		return (inet_ntop6((const unsigned char *)src, dst, size));
++#endif
++	default:
++		errno = EAFNOSUPPORT;
++		return (NULL);
++	}
++	/* NOTREACHED */
++}
++
++/* const char *
++ * inet_ntop4(src, dst, size)
++ *	format an IPv4 address
++ * return:
++ *	`dst' (as a const)
++ * notes:
++ *	(1) uses no statics
++ *	(2) takes a unsigned char* not an in_addr as input
++ * author:
++ *	Paul Vixie, 1996.
++ */
++static const char *
++inet_ntop4(const unsigned char *src, char *dst, size_t size)
++{
++	static const char *fmt = "%u.%u.%u.%u";
++	char tmp[sizeof "255.255.255.255"];
++	size_t len;
++
++	len = snprintf(tmp, sizeof tmp, fmt, src[0], src[1], src[2], src[3]);
++	if (len >= size) {
++		errno = ENOSPC;
++		return (NULL);
++	}
++	memcpy(dst, tmp, len + 1);
++
++	return (dst);
++}
++
++/* const char *
++ * isc_inet_ntop6(src, dst, size)
++ *	convert IPv6 binary address into presentation (printable) format
++ * author:
++ *	Paul Vixie, 1996.
++ */
++#ifdef AF_INET6
++static const char *
++inet_ntop6(const unsigned char *src, char *dst, size_t size)
++{
++	/*
++	 * Note that int32_t and int16_t need only be "at least" large enough
++	 * to contain a value of the specified size.  On some systems, like
++	 * Crays, there is no such thing as an integer variable with 16 bits.
++	 * Keep this in mind if you think this function should have been coded
++	 * to use pointer overlays.  All the world's not a VAX.
++	 */
++	char tmp[sizeof "ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255"], *tp;
++	struct { int base, len; } best, cur;
++	unsigned int words[NS_IN6ADDRSZ / NS_INT16SZ];
++	int i, inc;
++
++	/*
++	 * Preprocess:
++	 *	Copy the input (bytewise) array into a wordwise array.
++	 *	Find the longest run of 0x00's in src[] for :: shorthanding.
++	 */
++	memset(words, '\0', sizeof words);
++	for (i = 0; i < NS_IN6ADDRSZ; i++)
++		words[i / 2] |= (src[i] << ((1 - (i % 2)) << 3));
++	best.base = -1;
++	cur.base = -1;
++	for (i = 0; i < (NS_IN6ADDRSZ / NS_INT16SZ); i++) {
++		if (words[i] == 0) {
++			if (cur.base == -1)
++				cur.base = i, cur.len = 1;
++			else
++				cur.len++;
++		} else {
++			if (cur.base != -1) {
++				if (best.base == -1 || cur.len > best.len)
++					best = cur;
++				cur.base = -1;
++			}
++		}
++	}
++	if (cur.base != -1) {
++		if (best.base == -1 || cur.len > best.len)
++			best = cur;
++	}
++	if (best.base != -1 && best.len < 2)
++		best.base = -1;
++
++	/*
++	 * Format the result.
++	 */
++	tp = tmp;
++	for (i = 0; i < (NS_IN6ADDRSZ / NS_INT16SZ); i++) {
++		/* Are we inside the best run of 0x00's? */
++		if (best.base != -1 && i >= best.base &&
++		    i < (best.base + best.len)) {
++			if (i == best.base)
++				*tp++ = ':';
++			continue;
++		}
++		/* Are we following an initial run of 0x00s or any real hex? */
++		if (i != 0)
++			*tp++ = ':';
++		/* Is this address an encapsulated IPv4? */
++		if (i == 6 && best.base == 0 &&
++		    (best.len == 6 || (best.len == 5 && words[5] == 0xffff))) {
++			if (!inet_ntop4(src+12, tp, sizeof tmp - (tp - tmp)))
++				return (NULL);
++			tp += strlen(tp);
++			break;
++		}
++		inc = snprintf(tp, 5, "%x", words[i]);
++		assert(inc < 5);
++		tp += inc;
++	}
++	/* Was it a trailing run of 0x00's? */
++	if (best.base != -1 && (best.base + best.len) ==
++	    (NS_IN6ADDRSZ / NS_INT16SZ))
++		*tp++ = ':';
++	*tp++ = '\0';
++
++	/*
++	 * Check for overflow, copy, and we're done.
++	 */
++	if ((size_t)(tp - tmp) > size) {
++		errno = ENOSPC;
++		return (NULL);
++	}
++	memcpy(dst, tmp, tp - tmp);
++	return (dst);
++}
++#endif /* AF_INET6 */
++
++#endif /* INET_NTOP_H */
+diff --git a/src/utils/inet_pton.h b/src/utils/inet_pton.h
+new file mode 100644
+index 0000000..cf1a907
+--- /dev/null
++++ b/src/utils/inet_pton.h
+@@ -0,0 +1,217 @@
++/*
++ * Copyright (C) 1996-2001  Internet Software Consortium.
++ *
++ * Permission to use, copy, modify, and distribute this software for any
++ * purpose with or without fee is hereby granted, provided that the above
++ * copyright notice and this permission notice appear in all copies.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS" AND INTERNET SOFTWARE CONSORTIUM
++ * DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL
++ * INTERNET SOFTWARE CONSORTIUM BE LIABLE FOR ANY SPECIAL, DIRECT,
++ * INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING
++ * FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
++ * NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
++ * WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
++ */
++
++#ifndef INET_PTON_H
++#define INET_PTON_H
++
++#ifndef NS_INT16SZ
++#define NS_INT16SZ	 2
++#endif
++#ifndef NS_INADDRSZ
++#define NS_INADDRSZ	 4
++#endif
++#ifndef NS_IN6ADDRSZ
++#define NS_IN6ADDRSZ	16
++#endif
++
++/*
++ * WARNING: Don't even consider trying to compile this on a system where
++ * sizeof(int) < 4.  sizeof(int) > 4 is fine; all the world's not a VAX.
++ */
++
++static int inet_pton4(const char *src, unsigned char *dst);
++#ifdef AF_INET6
++static int inet_pton6(const char *src, unsigned char *dst);
++#endif
++
++/* int
++ * inet_pton(af, src, dst)
++ *	convert from presentation format (which usually means ASCII printable)
++ *	to network format (which is usually some kind of binary format).
++ * return:
++ *	1 if the address was valid for the specified address family
++ *	0 if the address wasn't valid (`dst' is untouched in this case)
++ *	-1 if some other error occurred (`dst' is untouched in this case, too)
++ * author:
++ *	Paul Vixie, 1996.
++ */
++static int
++inet_pton_impl(int af,
++	  const char *src,
++	  void *dst)
++{
++	switch (af) {
++	case AF_INET:
++		return (inet_pton4(src, (unsigned char *)dst));
++#ifdef AF_INET6
++	case AF_INET6:
++		return (inet_pton6(src, (unsigned char *)dst));
++#endif
++	default:
++		errno = EAFNOSUPPORT;
++		return (-1);
++	}
++	/* NOTREACHED */
++}
++
++/* int
++ * inet_pton4(src, dst)
++ *	like inet_aton() but without all the hexadecimal and shorthand.
++ * return:
++ *	1 if `src' is a valid dotted quad, else 0.
++ * notice:
++ *	does not touch `dst' unless it's returning 1.
++ * author:
++ *	Paul Vixie, 1996.
++ */
++static int
++inet_pton4(const char *src, unsigned char *dst)
++{
++	static const char digits[] = "0123456789";
++	int saw_digit, octets, ch;
++	unsigned char tmp[NS_INADDRSZ], *tp;
++
++	saw_digit = 0;
++	octets = 0;
++	*(tp = tmp) = 0;
++	while ((ch = *src++) != '\0') {
++		const char *pch;
++
++		if ((pch = strchr(digits, ch)) != NULL) {
++			unsigned int new_ = *tp * 10 + (pch - digits);
++
++			if (new_ > 255)
++				return (0);
++			*tp = new_;
++			if (! saw_digit) {
++				if (++octets > 4)
++					return (0);
++				saw_digit = 1;
++			}
++		} else if (ch == '.' && saw_digit) {
++			if (octets == 4)
++				return (0);
++			*++tp = 0;
++			saw_digit = 0;
++		} else
++			return (0);
++	}
++	if (octets < 4)
++		return (0);
++	memcpy(dst, tmp, NS_INADDRSZ);
++	return (1);
++}
++
++/* int
++ * inet_pton6(src, dst)
++ *	convert presentation level address to network order binary form.
++ * return:
++ *	1 if `src' is a valid [RFC1884 2.2] address, else 0.
++ * notice:
++ *	(1) does not touch `dst' unless it's returning 1.
++ *	(2) :: in a full address is silently ignored.
++ * credit:
++ *	inspired by Mark Andrews.
++ * author:
++ *	Paul Vixie, 1996.
++ */
++#ifdef AF_INET6
++static int
++inet_pton6(const char *src, unsigned char *dst)
++{
++	static const char xdigits_l[] = "0123456789abcdef",
++			  xdigits_u[] = "0123456789ABCDEF";
++	unsigned char tmp[NS_IN6ADDRSZ], *tp, *endp, *colonp;
++	const char *xdigits, *curtok;
++	int ch, saw_xdigit;
++	unsigned int val;
++
++	memset((tp = tmp), '\0', NS_IN6ADDRSZ);
++	endp = tp + NS_IN6ADDRSZ;
++	colonp = NULL;
++	/* Leading :: requires some special handling. */
++	if (*src == ':')
++		if (*++src != ':')
++			return (0);
++	curtok = src;
++	saw_xdigit = 0;
++	val = 0;
++	while ((ch = *src++) != '\0') {
++		const char *pch;
++
++		if ((pch = strchr((xdigits = xdigits_l), ch)) == NULL)
++			pch = strchr((xdigits = xdigits_u), ch);
++		if (pch != NULL) {
++			val <<= 4;
++			val |= (pch - xdigits);
++			if (val > 0xffff)
++				return (0);
++			saw_xdigit = 1;
++			continue;
++		}
++		if (ch == ':') {
++			curtok = src;
++			if (!saw_xdigit) {
++				if (colonp)
++					return (0);
++				colonp = tp;
++				continue;
++			}
++			if (tp + NS_INT16SZ > endp)
++				return (0);
++			*tp++ = (unsigned char) (val >> 8) & 0xff;
++			*tp++ = (unsigned char) val & 0xff;
++			saw_xdigit = 0;
++			val = 0;
++			continue;
++		}
++		if (ch == '.' && ((tp + NS_INADDRSZ) <= endp) &&
++		    inet_pton4(curtok, tp) > 0) {
++			tp += NS_INADDRSZ;
++			saw_xdigit = 0;
++			break;	/* '\0' was seen by inet_pton4(). */
++		}
++		return (0);
++	}
++	if (saw_xdigit) {
++		if (tp + NS_INT16SZ > endp)
++			return (0);
++		*tp++ = (unsigned char) (val >> 8) & 0xff;
++		*tp++ = (unsigned char) val & 0xff;
++	}
++	if (colonp != NULL) {
++		/*
++		 * Since some memmove()'s erroneously fail to handle
++		 * overlapping regions, we'll do the shift by hand.
++		 */
++		const int n = tp - colonp;
++		int i;
++
++		for (i = 1; i <= n; i++) {
++			endp[- i] = colonp[n - i];
++			colonp[n - i] = 0;
++		}
++		tp = endp;
++	}
++	if (tp != endp)
++		return (0);
++	memcpy(dst, tmp, NS_IN6ADDRSZ);
++	return (1);
++}
++#endif
++
++#endif /* INET_PTON_H */
+diff --git a/src/utils/pcsc_funcs.c b/src/utils/pcsc_funcs.c
+index 383ed3d..ef39817 100644
+--- a/src/utils/pcsc_funcs.c
++++ b/src/utils/pcsc_funcs.c
+@@ -123,7 +123,8 @@ struct scard_data {
+ 	int pin1_required;
+ };
+ 
+-#ifdef __MINGW32_VERSION
++/*#ifdef __MINGW32_VERSION*/
++#ifndef UNICODE
+ /* MinGW does not yet support WinScard, so load the needed functions
+  * dynamically from winscard.dll for now. */
+ 
+@@ -136,8 +137,8 @@ static const SCARD_IO_REQUEST *dll_g_rgSCardT0Pci, *dll_g_rgSCardT1Pci;
+ #define SCARD_PCI_T1 (dll_g_rgSCardT1Pci)
+ 
+ 
+-static WINSCARDAPI LONG WINAPI
+-(*dll_SCardEstablishContext)(IN DWORD dwScope,
++static WINSCARDAPI LONG
++(WINAPI *dll_SCardEstablishContext)(IN DWORD dwScope,
+ 			     IN LPCVOID pvReserved1,
+ 			     IN LPCVOID pvReserved2,
+ 			     OUT LPSCARDCONTEXT phContext);
+@@ -146,16 +147,16 @@ static WINSCARDAPI LONG WINAPI
+ static long (*dll_SCardReleaseContext)(long hContext);
+ #define SCardReleaseContext dll_SCardReleaseContext
+ 
+-static WINSCARDAPI LONG WINAPI
+-(*dll_SCardListReadersA)(IN SCARDCONTEXT hContext,
++static WINSCARDAPI LONG
++(WINAPI *dll_SCardListReadersA)(IN SCARDCONTEXT hContext,
+ 			 IN LPCSTR mszGroups,
+ 			 OUT LPSTR mszReaders,
+ 			 IN OUT LPDWORD pcchReaders);
+ #undef SCardListReaders
+ #define SCardListReaders dll_SCardListReadersA
+ 
+-static WINSCARDAPI LONG WINAPI
+-(*dll_SCardConnectA)(IN SCARDCONTEXT hContext,
++static WINSCARDAPI LONG
++(WINAPI *dll_SCardConnectA)(IN SCARDCONTEXT hContext,
+ 		     IN LPCSTR szReader,
+ 		     IN DWORD dwShareMode,
+ 		     IN DWORD dwPreferredProtocols,
+@@ -164,13 +165,13 @@ static WINSCARDAPI LONG WINAPI
+ #undef SCardConnect
+ #define SCardConnect dll_SCardConnectA
+ 
+-static WINSCARDAPI LONG WINAPI
+-(*dll_SCardDisconnect)(IN SCARDHANDLE hCard,
++static WINSCARDAPI LONG
++(WINAPI *dll_SCardDisconnect)(IN SCARDHANDLE hCard,
+ 		       IN DWORD dwDisposition);
+ #define SCardDisconnect dll_SCardDisconnect
+ 
+-static WINSCARDAPI LONG WINAPI
+-(*dll_SCardTransmit)(IN SCARDHANDLE hCard,
++static WINSCARDAPI LONG
++(WINAPI *dll_SCardTransmit)(IN SCARDHANDLE hCard,
+ 		     IN LPCSCARD_IO_REQUEST pioSendPci,
+ 		     IN LPCBYTE pbSendBuffer,
+ 		     IN DWORD cbSendLength,
+@@ -179,12 +180,12 @@ static WINSCARDAPI LONG WINAPI
+ 		     IN OUT LPDWORD pcbRecvLength);
+ #define SCardTransmit dll_SCardTransmit
+ 
+-static WINSCARDAPI LONG WINAPI
+-(*dll_SCardBeginTransaction)(IN SCARDHANDLE hCard);
++static WINSCARDAPI LONG
++(WINAPI *dll_SCardBeginTransaction)(IN SCARDHANDLE hCard);
+ #define SCardBeginTransaction dll_SCardBeginTransaction
+ 
+-static WINSCARDAPI LONG WINAPI
+-(*dll_SCardEndTransaction)(IN SCARDHANDLE hCard, IN DWORD dwDisposition);
++static WINSCARDAPI LONG
++(WINAPI *dll_SCardEndTransaction)(IN SCARDHANDLE hCard, IN DWORD dwDisposition);
+ #define SCardEndTransaction dll_SCardEndTransaction
+ 
+ 
+diff --git a/src/utils/trace.h b/src/utils/trace.h
+index d1636de..8594512 100644
+--- a/src/utils/trace.h
++++ b/src/utils/trace.h
+@@ -23,7 +23,7 @@ struct wpa_trace_ref {
+ 	const void *addr;
+ 	WPA_TRACE_INFO
+ };
+-#define WPA_TRACE_REF(name) struct wpa_trace_ref wpa_trace_ref_##name
++#define WPA_TRACE_REF(name) struct wpa_trace_ref wpa_trace_ref_##name ;
+ 
+ #define wpa_trace_dump(title, ptr) \
+ 	wpa_trace_dump_func((title), (ptr)->btrace, (ptr)->btrace_num)
+diff --git a/src/utils/wpa_debug.c b/src/utils/wpa_debug.c
+index a338a20..4f00676 100644
+--- a/src/utils/wpa_debug.c
++++ b/src/utils/wpa_debug.c
+@@ -564,6 +564,23 @@ int wpa_debug_open_file(const char *path)
+ 
+ 	out_fd = open(path, O_CREAT | O_APPEND | O_WRONLY,
+ 		      S_IRUSR | S_IWUSR | S_IRGRP);
++#ifdef CONFIG_NATIVE_WINDOWS
++	if (out_fd < 0 && os_strncasecmp(path, "\\Temp\\", 6) == 0) {
++		char *buf = NULL;
++		char *temp = getenv("TEMP");
++		if (!temp)
++			temp = getenv("TMP");
++
++		if (temp) {
++			size_t buf_len = os_strlen(temp) + os_strlen(path);
++			buf = os_malloc(buf_len);
++			os_snprintf(buf, buf_len, "%s\\%s", temp, path + 6);
++			out_fd = open(buf, O_CREAT | O_APPEND | O_WRONLY,
++					  S_IRUSR | S_IWUSR | S_IRGRP);
++			os_free(buf);
++		}
++	}
++#endif
+ 	if (out_fd < 0) {
+ 		wpa_printf(MSG_ERROR,
+ 			   "%s: Failed to open output file descriptor, using standard output",
+diff --git a/src/utils/wpa_debug.h b/src/utils/wpa_debug.h
+index c6d5cc6..b062d13 100644
+--- a/src/utils/wpa_debug.h
++++ b/src/utils/wpa_debug.h
+@@ -26,7 +26,11 @@ enum {
+ #ifdef CONFIG_NO_STDOUT_DEBUG
+ 
+ #define wpa_debug_print_timestamp() do { } while (0)
++#ifdef _MSC_VER
++#define wpa_printf(args, ...) do { } while (0)
++#else
+ #define wpa_printf(args...) do { } while (0)
++#endif
+ #define wpa_hexdump(l,t,b,le) do { } while (0)
+ #define wpa_hexdump_buf(l,t,b) do { } while (0)
+ #define wpa_hexdump_key(l,t,b,le) do { } while (0)
+@@ -36,7 +40,11 @@ enum {
+ #define wpa_debug_open_file(p) do { } while (0)
+ #define wpa_debug_close_file() do { } while (0)
+ #define wpa_debug_setup_stdout() do { } while (0)
++#ifdef _MSC_VER
++#define wpa_dbg(args, ...) do { } while (0)
++#else
+ #define wpa_dbg(args...) do { } while (0)
++#endif
+ 
+ static inline int wpa_debug_reopen_file(void)
+ {
+@@ -154,7 +162,11 @@ void wpa_hexdump_ascii_key(int level, const char *title, const void *buf,
+  * needed in the control interface while wpa_msg() has to be used for anything
+  * that needs to shown to control interface monitors.
+  */
++#if defined(_MSC_VER)
++#define wpa_dbg(args, ...)  wpa_msg(args, __VA_ARGS__)
++#else
+ #define wpa_dbg(args...) wpa_msg(args)
++#endif
+ 
+ #endif /* CONFIG_NO_STDOUT_DEBUG */
+ 
+diff --git a/wpa_supplicant/autoscan_exponential.c b/wpa_supplicant/autoscan_exponential.c
+index 424477b..1208e70 100644
+--- a/wpa_supplicant/autoscan_exponential.c
++++ b/wpa_supplicant/autoscan_exponential.c
+@@ -97,8 +97,8 @@ static int autoscan_exponential_notify_scan(void *priv,
+ 
+ 
+ const struct autoscan_ops autoscan_exponential_ops = {
+-	.name = "exponential",
+-	.init = autoscan_exponential_init,
+-	.deinit = autoscan_exponential_deinit,
+-	.notify_scan = autoscan_exponential_notify_scan,
++	"exponential",
++	autoscan_exponential_init,
++	autoscan_exponential_deinit,
++	autoscan_exponential_notify_scan,
+ };
+diff --git a/wpa_supplicant/autoscan_periodic.c b/wpa_supplicant/autoscan_periodic.c
+index 102d723..7096066 100644
+--- a/wpa_supplicant/autoscan_periodic.c
++++ b/wpa_supplicant/autoscan_periodic.c
+@@ -78,8 +78,8 @@ static int autoscan_periodic_notify_scan(void *priv,
+ 
+ 
+ const struct autoscan_ops autoscan_periodic_ops = {
+-	.name = "periodic",
+-	.init = autoscan_periodic_init,
+-	.deinit = autoscan_periodic_deinit,
+-	.notify_scan = autoscan_periodic_notify_scan,
++	"periodic",
++	autoscan_periodic_init,
++	autoscan_periodic_deinit,
++	autoscan_periodic_notify_scan,
+ };
+diff --git a/wpa_supplicant/bgscan_learn.c b/wpa_supplicant/bgscan_learn.c
+index cb732f7..847ae7c 100644
+--- a/wpa_supplicant/bgscan_learn.c
++++ b/wpa_supplicant/bgscan_learn.c
+@@ -605,10 +605,10 @@ static void bgscan_learn_notify_signal_change(void *priv, int above,
+ 
+ 
+ const struct bgscan_ops bgscan_learn_ops = {
+-	.name = "learn",
+-	.init = bgscan_learn_init,
+-	.deinit = bgscan_learn_deinit,
+-	.notify_scan = bgscan_learn_notify_scan,
+-	.notify_beacon_loss = bgscan_learn_notify_beacon_loss,
+-	.notify_signal_change = bgscan_learn_notify_signal_change,
++	"learn",
++	bgscan_learn_init,
++	bgscan_learn_deinit,
++	bgscan_learn_notify_scan,
++	bgscan_learn_notify_beacon_loss,
++	bgscan_learn_notify_signal_change,
+ };
+diff --git a/wpa_supplicant/bgscan_simple.c b/wpa_supplicant/bgscan_simple.c
+index 41a26df..efc82e7 100644
+--- a/wpa_supplicant/bgscan_simple.c
++++ b/wpa_supplicant/bgscan_simple.c
+@@ -266,10 +266,10 @@ static void bgscan_simple_notify_signal_change(void *priv, int above,
+ 
+ 
+ const struct bgscan_ops bgscan_simple_ops = {
+-	.name = "simple",
+-	.init = bgscan_simple_init,
+-	.deinit = bgscan_simple_deinit,
+-	.notify_scan = bgscan_simple_notify_scan,
+-	.notify_beacon_loss = bgscan_simple_notify_beacon_loss,
+-	.notify_signal_change = bgscan_simple_notify_signal_change,
++	"simple",
++	bgscan_simple_init,
++	bgscan_simple_deinit,
++	bgscan_simple_notify_scan,
++	bgscan_simple_notify_beacon_loss,
++	bgscan_simple_notify_signal_change,
+ };
+diff --git a/wpa_supplicant/ctrl_iface.c b/wpa_supplicant/ctrl_iface.c
+index bcd67fc..98fcb3d 100644
+--- a/wpa_supplicant/ctrl_iface.c
++++ b/wpa_supplicant/ctrl_iface.c
+@@ -1253,10 +1253,10 @@ static int wpa_supplicant_ctrl_iface_tdls_link_status(
+ static int wmm_ac_ctrl_addts(struct wpa_supplicant *wpa_s, char *cmd)
+ {
+ 	char *token, *context = NULL;
+-	struct wmm_ac_ts_setup_params params = {
+-		.tsid = 0xff,
+-		.direction = 0xff,
+-	};
++	struct wmm_ac_ts_setup_params params;
++	os_memset(&params, 0, sizeof(params));
++	params.tsid = 0xff;
++	params.direction = 0xff;
+ 
+ 	while ((token = str_token(cmd, " ", &context))) {
+ 		if (sscanf(token, "tsid=%i", &params.tsid) == 1 ||
+@@ -8210,9 +8210,9 @@ static int wpas_ctrl_iface_driver_flags(struct wpa_supplicant *wpa_s,
+ 	end = buf + buflen;
+ 
+ 	for (i = 0; i < 64; i++) {
+-		if (wpa_s->drv_flags & (1LLU << i)) {
++		if (wpa_s->drv_flags & (((unsigned long long)1) << i)) {
+ 			ret = os_snprintf(pos, end - pos, "%s\n",
+-					  driver_flag_to_string(1LLU << i));
++					  driver_flag_to_string(((unsigned long long)1) << i));
+ 			if (os_snprintf_error(end - pos, ret))
+ 				return -1;
+ 			pos += ret;
+@@ -8238,9 +8238,9 @@ static int wpas_ctrl_iface_driver_flags2(struct wpa_supplicant *wpa_s,
+ 	end = buf + buflen;
+ 
+ 	for (i = 0; i < 64; i++) {
+-		if (wpa_s->drv_flags2 & (1LLU << i)) {
++		if (wpa_s->drv_flags2 & (((unsigned long long)1) << i)) {
+ 			ret = os_snprintf(pos, end - pos, "%s\n",
+-					  driver_flag2_to_string(1LLU << i));
++					  driver_flag2_to_string(((unsigned long long)1) << i));
+ 			if (os_snprintf_error(end - pos, ret))
+ 				return -1;
+ 			pos += ret;
+diff --git a/wpa_supplicant/ctrl_iface_named_pipe.c b/wpa_supplicant/ctrl_iface_named_pipe.c
+index bddc041..721ea1c 100644
+--- a/wpa_supplicant/ctrl_iface_named_pipe.c
++++ b/wpa_supplicant/ctrl_iface_named_pipe.c
+@@ -48,6 +48,58 @@ ConvertStringSecurityDescriptorToSecurityDescriptorA
+ #define REQUEST_BUFSIZE CTRL_IFACE_MAX_LEN
+ #define REPLY_BUFSIZE 4096
+ 
++#if !defined(UNICODE) && !defined(_UNICODE)
++#ifdef ConvertStringSecurityDescriptorToSecurityDescriptor
++#undef ConvertStringSecurityDescriptorToSecurityDescriptor
++#endif
++
++static BOOL ConvertStringSecurityDescriptorToSecurityDescriptor_fb(
++	LPCSTR StringSecurityDescriptor, DWORD StringSDRevision,
++	PSECURITY_DESCRIPTOR *SecurityDescriptor, PULONG SecurityDescriptorSize)
++{
++	(void)StringSecurityDescriptor;
++	(void)StringSDRevision;
++	*SecurityDescriptor = NULL;
++	*SecurityDescriptorSize = 0;
++	return TRUE;
++}
++
++static BOOL ConvertStringSecurityDescriptorToSecurityDescriptor_impl(
++	LPCSTR StringSecurityDescriptor, DWORD StringSDRevision,
++	PSECURITY_DESCRIPTOR *SecurityDescriptor, PULONG SecurityDescriptorSize)
++{
++	typedef BOOL (WINAPI *func_t)(LPCSTR, DWORD, PSECURITY_DESCRIPTOR *, PULONG);
++	HINSTANCE dll;
++	BOOL result;
++	func_t func;
++
++	dll = LoadLibrary("advapi32");
++	if (dll == NULL) {
++		wpa_printf(MSG_DEBUG, "CTRL: Could not load advapi32.dll library");
++		result = ConvertStringSecurityDescriptorToSecurityDescriptor_fb(
++					StringSecurityDescriptor, StringSDRevision,
++					SecurityDescriptor, SecurityDescriptorSize);
++		return result;
++	}
++
++	func = (func_t)GetProcAddress(dll, "ConvertStringSecurityDescriptorToSecurityDescriptorA");
++	if (func == NULL) {
++		wpa_printf(MSG_DEBUG, "CTRL: Could not resolve ConvertStringSecurityDescriptorToSecurityDescriptorA");
++		result = ConvertStringSecurityDescriptorToSecurityDescriptor_fb(
++					StringSecurityDescriptor, StringSDRevision,
++					SecurityDescriptor, SecurityDescriptorSize);
++	} else {
++		result = func(StringSecurityDescriptor, StringSDRevision,
++					  SecurityDescriptor, SecurityDescriptorSize);
++	}
++
++	FreeLibrary(dll);
++	return result;
++}
++
++#define ConvertStringSecurityDescriptorToSecurityDescriptor ConvertStringSecurityDescriptorToSecurityDescriptor_impl
++#endif
++
+ struct ctrl_iface_priv;
+ 
+ /**
+diff --git a/wpa_supplicant/eapol_test.c b/wpa_supplicant/eapol_test.c
+index e256ac5..034e1c2 100644
+--- a/wpa_supplicant/eapol_test.c
++++ b/wpa_supplicant/eapol_test.c
+@@ -986,12 +986,7 @@ static int driver_get_capa(void *priv, struct wpa_driver_capa *capa)
+ }
+ 
+ 
+-struct wpa_driver_ops eapol_test_drv_ops = {
+-	.name = "test",
+-	.get_ssid = driver_get_ssid,
+-	.get_bssid = driver_get_bssid,
+-	.get_capa = driver_get_capa,
+-};
++struct wpa_driver_ops eapol_test_drv_ops;
+ 
+ static void wpa_init_conf(struct eapol_test_data *e,
+ 			  struct wpa_supplicant *wpa_s, const char *authsrv,
+@@ -1001,6 +996,12 @@ static void wpa_init_conf(struct eapol_test_data *e,
+ 	struct hostapd_radius_server *as;
+ 	int res;
+ 
++	os_memset(&eapol_test_drv_ops, 0, sizeof(eapol_test_drv_ops));
++	eapol_test_drv_ops.name = "test";
++	eapol_test_drv_ops.get_ssid = driver_get_ssid;
++	eapol_test_drv_ops.get_bssid = driver_get_bssid;
++	eapol_test_drv_ops.get_capa = driver_get_capa;
++
+ 	wpa_s->driver = &eapol_test_drv_ops;
+ 	wpa_s->drv_priv = e;
+ 	wpa_s->bssid[5] = 1;
+diff --git a/wpa_supplicant/main_winsvc.c b/wpa_supplicant/main_winsvc.c
+index 9950aa9..8211097 100644
+--- a/wpa_supplicant/main_winsvc.c
++++ b/wpa_supplicant/main_winsvc.c
+@@ -27,6 +27,38 @@
+ #include "wpa_supplicant_i.h"
+ #include "eloop.h"
+ 
++#ifndef UNICODE
++static BOOL ChangeServiceConfig2A_impl(SC_HANDLE hService, DWORD dwInfoLevel, LPVOID lpInfo)
++{
++	typedef BOOL (WINAPI *func_t)(SC_HANDLE, DWORD, LPVOID);
++	HINSTANCE dll;
++	BOOL result;
++	func_t func;
++
++	dll = LoadLibrary("advapi32");
++	if (dll == NULL) {
++		printf("ChangeServiceConfig2: Could not load advapi32.dll library");
++		result = FALSE;
++		return result;
++	}
++
++	func = (func_t)GetProcAddress(dll, "ChangeServiceConfig2A");
++	if (func == NULL) {
++		printf("ChangeServiceConfig2: Could not resolve ChangeServiceConfig2A");
++		result = FALSE;
++	} else {
++		result = func(hService, dwInfoLevel, lpInfo);
++	}
++
++	FreeLibrary(dll);
++	return result;
++}
++#ifdef ChangeServiceConfig2
++#undef ChangeServiceConfig2
++#endif
++#define ChangeServiceConfig2 ChangeServiceConfig2A_impl
++#endif
++
+ #ifndef WPASVC_NAME
+ #define WPASVC_NAME TEXT("wpasvc")
+ #endif
+@@ -131,6 +163,59 @@ static int read_interface(struct wpa_global *global, HKEY _hk,
+ }
+ 
+ 
++static void prepare_registry(void)
++{
++	LONG ret;
++	HKEY hk, ihk;
++
++	hk = NULL;
++	ret = RegOpenKeyEx(WPA_KEY_ROOT, WPA_KEY_PREFIX, 0, KEY_QUERY_VALUE, &hk);
++	if (ret == ERROR_FILE_NOT_FOUND) {
++		hk = NULL;
++		ret = RegCreateKeyEx(WPA_KEY_ROOT, WPA_KEY_PREFIX, 0, NULL, 0, KEY_WRITE, NULL, &hk, NULL);
++		if (ret == ERROR_SUCCESS) {
++			DWORD dwVal = 0;
++			RegSetValueEx(hk, TEXT("debug_level"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
++			RegSetValueEx(hk, TEXT("debug_show_keys"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
++			RegSetValueEx(hk, TEXT("debug_timestamp"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
++			RegSetValueEx(hk, TEXT("debug_use_file"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
++		}
++	}
++	if (!hk)
++		return;
++
++	ihk = NULL;
++	ret = RegOpenKeyEx(hk, TEXT("interfaces"), 0, KEY_QUERY_VALUE, &ihk);
++	if (ret == ERROR_FILE_NOT_FOUND)
++		RegCreateKeyEx(hk, TEXT("interfaces"), 0, NULL, 0, KEY_WRITE, NULL, &ihk, NULL);
++	if (ihk)
++		RegCloseKey(ihk);
++
++	ihk = NULL;
++	ret = RegOpenKeyEx(hk, TEXT("configs\\default"), 0, KEY_QUERY_VALUE, &ihk);
++	if (ret == ERROR_FILE_NOT_FOUND) {
++		ret = RegCreateKeyEx(hk, TEXT("configs\\default"), 0, NULL, 0, KEY_WRITE, NULL, &ihk, NULL);
++		if (ret == ERROR_SUCCESS) {
++			DWORD dwVal = 2;
++			RegSetValueEx(ihk, TEXT("ap_scan"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
++			dwVal = 1;
++			RegSetValueEx(ihk, TEXT("update_config"), 0, REG_DWORD, (BYTE*)(&dwVal), sizeof(DWORD));
++		}
++	}
++	if (ihk)
++		RegCloseKey(ihk);
++
++	ihk = NULL;
++	ret = RegOpenKeyEx(hk, TEXT("configs\\default\\networks"), 0, KEY_QUERY_VALUE, &ihk);
++	if (ret == ERROR_FILE_NOT_FOUND)
++		RegCreateKeyEx(hk, TEXT("configs\\default\\networks"), 0, NULL, 0, KEY_WRITE, NULL, &ihk, NULL);
++	if (ihk)
++		RegCloseKey(ihk);
++
++	RegCloseKey(hk);
++}
++
++
+ static int wpa_supplicant_thread(void)
+ {
+ 	int exitcode;
+@@ -146,6 +231,8 @@ static int wpa_supplicant_thread(void)
+ 	os_memset(&params, 0, sizeof(params));
+ 	params.wpa_debug_level = MSG_INFO;
+ 
++	prepare_registry();
++
+ 	ret = RegOpenKeyEx(WPA_KEY_ROOT, WPA_KEY_PREFIX,
+ 			   0, KEY_QUERY_VALUE, &hk);
+ 	if (ret != ERROR_SUCCESS) {
+@@ -439,6 +526,7 @@ int main(int argc, char *argv[])
+ 				if (path == NULL)
+ 					return -1;
+ 			}
++			prepare_registry();
+ 			ret = register_service(path);
+ 			os_free(path);
+ 			return ret;
+diff --git a/wpa_supplicant/nmake.mak b/wpa_supplicant/nmake.mak
+index 617df03..27c367e 100644
+--- a/wpa_supplicant/nmake.mak
++++ b/wpa_supplicant/nmake.mak
+@@ -9,7 +9,8 @@ all: wpa_supplicant.exe wpa_cli.exe wpa_passphrase.exe wpasvc.exe win_if_list.ex
+ 
+ # Root directory for WinPcap developer's pack
+ # (http://www.winpcap.org/install/bin/WpdPack_3_1.zip)
+-WINPCAPDIR=C:\dev\WpdPack
++#WINPCAPDIR=C:\dev\WpdPack
++WINPCAPDIR=..\..\WpdPack
+ 
+ # Root directory for OpenSSL
+ # (http://www.openssl.org/source/openssl-0.9.8a.tar.gz)
+@@ -18,7 +19,8 @@ WINPCAPDIR=C:\dev\WpdPack
+ # support it (openssl-tls-extensions.patch)
+ # Alternatively, see README-Windows.txt for information about binary
+ # installation package for OpenSSL.
+-OPENSSLDIR=C:\dev\openssl
++#OPENSSLDIR=C:\dev\openssl
++OPENSSLDIR=..\..\openssl-1.1.1-x86
+ 
+ CC = cl
+ OBJDIR = objs
+@@ -40,18 +42,23 @@ CFLAGS = $(CFLAGS) /DEAP_SIM
+ CFLAGS = $(CFLAGS) /DEAP_LEAP
+ CFLAGS = $(CFLAGS) /DEAP_PSK
+ CFLAGS = $(CFLAGS) /DEAP_AKA
+-#CFLAGS = $(CFLAGS) /DEAP_FAST
++CFLAGS = $(CFLAGS) /DEAP_FAST
+ CFLAGS = $(CFLAGS) /DEAP_PAX
+ CFLAGS = $(CFLAGS) /DEAP_TNC
+ CFLAGS = $(CFLAGS) /DPCSC_FUNCS
+ CFLAGS = $(CFLAGS) /DCONFIG_CTRL_IFACE
+ CFLAGS = $(CFLAGS) /DCONFIG_CTRL_IFACE_NAMED_PIPE
+ CFLAGS = $(CFLAGS) /DCONFIG_DRIVER_NDIS
++CFLAGS = $(CFLAGS) /DEAP_TLS_OPENSSL
++CFLAGS = $(CFLAGS) /DCONFIG_SHA256
++CFLAGS = $(CFLAGS) /DCONFIG_NO_SOCKLEN_T_TYPEDEF
++CFLAGS = $(CFLAGS) /DTLS_DEFAULT_CIPHERS=\"DEFAULT:!EXP:!LOW\"
+ CFLAGS = $(CFLAGS) /I..\src /I..\src\utils
+ CFLAGS = $(CFLAGS) /I.
+ CFLAGS = $(CFLAGS) /DWIN32
+ CFLAGS = $(CFLAGS) /Fo$(OBJDIR)\\ /c
+ CFLAGS = $(CFLAGS) /W3
++CFLAGS = $(CFLAGS) /wd4244 /wd4267 /wd4311 /wd4996
+ 
+ #CFLAGS = $(CFLAGS) /WX
+ 
+@@ -60,19 +67,36 @@ CFLAGS = $(CFLAGS) /W3
+ CFLAGS = $(CFLAGS) /D_CRT_SECURE_NO_DEPRECATE
+ 
+ OBJS = \
++	$(OBJDIR)\config___wpasup.obj \
++	$(OBJDIR)\config___utils.obj \
++	$(OBJDIR)\op_classes.obj \
++	$(OBJDIR)\random.obj \
++	$(OBJDIR)\robust_av.obj \
++	$(OBJDIR)\rrm.obj \
++	$(OBJDIR)\sha256-prf.obj \
++	$(OBJDIR)\sha256-tlsprf.obj \
++	$(OBJDIR)\tls_openssl_ocsp.obj \
++	$(OBJDIR)\twt.obj \
++	$(OBJDIR)\wmm_ac.obj \
++	$(OBJDIR)\hw_features_common.obj \
++	$(OBJDIR)\ieee802_11_common.obj \
++	$(OBJDIR)\ip_addr.obj \
++	$(OBJDIR)\eap_fast.obj \
++	$(OBJDIR)\eap_fast_common.obj \
++	$(OBJDIR)\eap_fast_pac.obj \
++	$(OBJDIR)\crc32.obj \
++	$(OBJDIR)\driver_common.obj \
++	$(OBJDIR)\bitfield.obj \
++	$(OBJDIR)\bss.obj \
++	$(OBJDIR)\sha1-prf.obj \
++	$(OBJDIR)\sha1-tprf.obj \
+ 	$(OBJDIR)\os_win32.obj \
+ 	$(OBJDIR)\eloop_win.obj \
+-	$(OBJDIR)\sha1.obj \
+ 	$(OBJDIR)\sha1-tlsprf.obj \
+-	$(OBJDIR)\sha1-pbkdf2.obj \
+-	$(OBJDIR)\md5.obj \
+-	$(OBJDIR)\aes-cbc.obj \
+ 	$(OBJDIR)\aes-ctr.obj \
+ 	$(OBJDIR)\aes-eax.obj \
+ 	$(OBJDIR)\aes-encblock.obj \
+ 	$(OBJDIR)\aes-omac1.obj \
+-	$(OBJDIR)\aes-unwrap.obj \
+-	$(OBJDIR)\aes-wrap.obj \
+ 	$(OBJDIR)\common.obj \
+ 	$(OBJDIR)\wpa_debug.obj \
+ 	$(OBJDIR)\wpabuf.obj \
+@@ -112,13 +136,11 @@ OBJS = \
+ 	$(OBJDIR)\ctrl_iface_named_pipe.obj \
+ 	$(OBJDIR)\driver_ndis.obj \
+ 	$(OBJDIR)\driver_ndis_.obj \
+-	$(OBJDIR)\scan_helpers.obj \
+ 	$(OBJDIR)\events.obj \
+ 	$(OBJDIR)\bssid_ignore.obj \
+ 	$(OBJDIR)\scan.obj \
+ 	$(OBJDIR)\wpas_glue.obj \
+ 	$(OBJDIR)\eap_register.obj \
+-	$(OBJDIR)\config.obj \
+ 	$(OBJDIR)\l2_packet_winpcap.obj \
+ 	$(OBJDIR)\tls_openssl.obj \
+ 	$(OBJDIR)\ms_funcs.obj \
+@@ -128,17 +150,15 @@ OBJS = \
+ 	$(OBJDIR)\notify.obj \
+ 	$(OBJDIR)\ndis_events.obj
+ 
+-# OBJS = $(OBJS) $(OBJDIR)\eap_fast.obj
+-
+ OBJS_t = $(OBJS) \
+ 	$(OBJDIR)\eapol_test.obj \
+ 	$(OBJDIR)\radius.obj \
+ 	$(OBJDIR)\radius_client.obj \
+-	$(OBJDIR)\config_file.obj $(OBJDIR)\base64.obj
++	$(OBJDIR)\config_file.obj
+ 
+ OBJS_t2 = $(OBJS) \
+ 	$(OBJDIR)\preauth_test.obj \
+-	$(OBJDIR)\config_file.obj $(OBJDIR)\base64.obj
++	$(OBJDIR)\config_file.obj
+ 
+ OBJS2 = $(OBJDIR)\drivers.obj \
+ 	$(OBJDIR)\config_file.obj \
+@@ -149,6 +169,10 @@ OBJS3 = $(OBJDIR)\drivers.obj \
+ 	$(OBJS3) $(OBJDIR)\main_winsvc.obj
+ 
+ OBJS_c = \
++	$(OBJDIR)\cli.obj \
++	$(OBJDIR)\edit_simple.obj \
++	$(OBJDIR)\eloop_win.obj \
++	$(OBJDIR)\wpa_debug.obj \
+ 	$(OBJDIR)\os_win32.obj \
+ 	$(OBJDIR)\wpa_cli.obj \
+ 	$(OBJDIR)\wpa_ctrl.obj \
+@@ -159,16 +183,13 @@ OBJS_p = \
+ 	$(OBJDIR)\common.obj \
+ 	$(OBJDIR)\wpa_debug.obj \
+ 	$(OBJDIR)\wpabuf.obj \
+-	$(OBJDIR)\sha1.obj \
+-	$(OBJDIR)\md5.obj \
+ 	$(OBJDIR)\crypto_openssl.obj \
+-	$(OBJDIR)\sha1-pbkdf2.obj \
+ 	$(OBJDIR)\wpa_passphrase.obj
+ 
+ LIBS = wbemuuid.lib libcmt.lib kernel32.lib uuid.lib ole32.lib oleaut32.lib \
+ 	ws2_32.lib Advapi32.lib Crypt32.lib Winscard.lib \
+ 	Packet.lib wpcap.lib \
+-	libeay32.lib ssleay32.lib
++	libcrypto.lib libssl.lib User32.lib
+ # If using Win32 OpenSSL binary installation from Shining Light Productions,
+ # replace the last line with this for dynamic libraries
+ #	libeay32MT.lib ssleay32MT.lib
+@@ -227,14 +248,26 @@ win_if_list.exe: $(OBJDIR) $(OBJDIR)\win_if_list.obj
+ {..\src\l2_packet}.c{$(OBJDIR)}.obj::
+ 	$(CC) $(CFLAGS) $<
+ 
++{..\src\radius}.c{$(OBJDIR)}.obj::
++	$(CC) $(CFLAGS) $<
++
+ {.\}.c{$(OBJDIR)}.obj::
+ 	$(CC) $(CFLAGS) $<
+ 
+ {.\}.cpp{$(OBJDIR)}.obj::
+ 	$(CC) $(CFLAGS) $<
+ 
++# @todo Conflict between src/utils/config.c and wpa_supplicant/config.c
++$(OBJDIR)\config___wpasup.obj:
++	$(CC) $(CFLAGS) .\config.c /Fo$(OBJDIR)\config___wpasup.obj
++
++$(OBJDIR)\config___utils.obj:
++	$(CC) $(CFLAGS) ..\src\utils\config.c /Fo$(OBJDIR)\config___utils.obj
++
+ $(OBJDIR):
+ 	if not exist "$(OBJDIR)" mkdir "$(OBJDIR)"
+ 
+ clean:
+ 	erase $(OBJDIR)\*.obj wpa_supplicant.exe
++	erase wpa_cli.exe wpa_passphrase.exe wpasvc.exe win_if_list.exe
++	erase eapol_test.exe preauth_test.exe
+diff --git a/wpa_supplicant/vs2005/eapol_test/eapol_test.vcproj b/wpa_supplicant/vs2005/eapol_test/eapol_test.vcproj
+index c92b8fd..50cded3 100755
+--- a/wpa_supplicant/vs2005/eapol_test/eapol_test.vcproj
++++ b/wpa_supplicant/vs2005/eapol_test/eapol_test.vcproj
+@@ -40,7 +40,7 @@
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+ 				Optimization="0"
+-				AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;C:\dev\WpdPack\include;C:\dev\openssl\include"
++				AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;..\..\..\..\WpdPack\include;..\..\..\..\openssl-1.1.1-x86\include"
+ 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
+ 				MinimalRebuild="true"
+ 				BasicRuntimeChecks="3"
+@@ -49,7 +49,7 @@
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="4"
+-				DisableSpecificWarnings="4244;4267;4311"
++				DisableSpecificWarnings="4244;4267;4311;4996"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -62,9 +62,9 @@
+ 			/>
+ 			<Tool
+ 				Name="VCLinkerTool"
+-				AdditionalDependencies="ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libeay32MT.lib ssleay32Mt.lib"
++				AdditionalDependencies="wbemuuid.lib ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libssl.lib libcrypto.lib"
+ 				LinkIncremental="2"
+-				AdditionalLibraryDirectories="C:\dev\WpdPack\lib;C:\dev\openssl\lib"
++				AdditionalLibraryDirectories="..\..\..\..\WpdPack\lib;..\..\..\..\openssl-1.1.1-x86\lib"
+ 				GenerateDebugInformation="true"
+ 				SubSystem="1"
+ 				TargetMachine="1"
+@@ -119,14 +119,14 @@
+ 			/>
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+-				AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;C:\dev\WpdPack\include;C:\dev\openssl\include"
++				AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;..\..\..\..\WpdPack\include;..\..\..\..\openssl-1.1.1-x86\include"
+ 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
+ 				RuntimeLibrary="2"
+ 				UsePrecompiledHeader="0"
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="3"
+-				DisableSpecificWarnings="4244;4267;4311"
++				DisableSpecificWarnings="4244;4267;4311;4996"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -139,9 +139,9 @@
+ 			/>
+ 			<Tool
+ 				Name="VCLinkerTool"
+-				AdditionalDependencies="ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libeay32MT.lib ssleay32Mt.lib"
++				AdditionalDependencies="wbemuuid.lib ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libssl.lib libcrypto.lib"
+ 				LinkIncremental="1"
+-				AdditionalLibraryDirectories="C:\dev\WpdPack\lib;C:\dev\openssl\lib"
++				AdditionalLibraryDirectories="..\..\..\..\WpdPack\lib;..\..\..\..\openssl-1.1.1-x86\lib"
+ 				GenerateDebugInformation="true"
+ 				SubSystem="1"
+ 				OptimizeReferences="2"
+@@ -182,10 +182,6 @@
+ 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+ 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+ 			>
+-			<File
+-				RelativePath="..\..\..\src\crypto\aes-cbc.c"
+-				>
+-			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\crypto\aes-ctr.c"
+ 				>
+@@ -203,15 +199,15 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\aes-unwrap.c"
++				RelativePath="..\..\..\src\utils\base64.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\aes-wrap.c"
++				RelativePath="..\..\..\src\utils\bitfield.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\base64.c"
++				RelativePath="..\..\bss.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -219,27 +215,59 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\bss.c"
++				RelativePath="..\..\..\src\eap_common\chap.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\eap_common\chap.c"
++				RelativePath="..\..\..\src\utils\common.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\common.c"
++				RelativePath="..\..\config.c"
+ 				>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___wpasup.obj"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___wpasup.obj"
++					/>
++				</FileConfiguration>
+ 			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\utils\config.c"
+ 				>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___utils.obj"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___utils.obj"
++					/>
++				</FileConfiguration>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\config.c"
++				RelativePath="..\..\config_file.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\config_file.c"
++				RelativePath="..\..\..\src\utils\crc32.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -258,6 +286,14 @@
+ 				RelativePath="..\..\..\src\drivers\driver_common.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\drivers\driver_ndis.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\drivers\driver_ndis_.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\eap_peer\eap.c"
+ 				>
+@@ -270,6 +306,18 @@
+ 				RelativePath="..\..\..\src\eap_common\eap_common.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_fast.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_fast_common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_fast_pac.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\eap_peer\eap_gtc.c"
+ 				>
+@@ -294,6 +342,14 @@
+ 				RelativePath="..\..\..\src\eap_peer\eap_otp.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_pax.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_pax_common.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\eap_peer\eap_peap.c"
+ 				>
+@@ -302,6 +358,14 @@
+ 				RelativePath="..\..\..\src\eap_common\eap_peap_common.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_psk.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_psk_common.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\eap_register.c"
+ 				>
+@@ -351,15 +415,19 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\ip_addr.c"
++				RelativePath="..\..\..\src\common\hw_features_common.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\l2_packet\l2_packet_winpcap.c"
++				RelativePath="..\..\..\src\common\ieee802_11_common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\utils\ip_addr.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\md5.c"
++				RelativePath="..\..\..\src\l2_packet\l2_packet_winpcap.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -370,20 +438,24 @@
+ 				RelativePath="..\..\..\src\eap_peer\mschapv2.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\drivers\ndis_events.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\notify.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\os_win32.c"
++				RelativePath="..\..\op_classes.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\pcsc_funcs.c"
++				RelativePath="..\..\..\src\utils\os_win32.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\rsn_supp\peerkey.c"
++				RelativePath="..\..\..\src\utils\pcsc_funcs.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -403,15 +475,19 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\scan.c"
++				RelativePath="..\..\..\src\crypto\random.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\sha1.c"
++				RelativePath="..\..\robust_av.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\sha1-pbkdf2.c"
++				RelativePath="..\..\rrm.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\scan.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -422,14 +498,38 @@
+ 				RelativePath="..\..\..\src\crypto\sha1-tlsprf.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\crypto\sha1-tprf.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\crypto\sha256-prf.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\crypto\sha256-tlsprf.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\crypto\tls_openssl.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\crypto\tls_openssl_ocsp.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\eap_peer\tncc.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\twt.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\wmm_ac.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\rsn_supp\wpa.c"
+ 				>
+diff --git a/wpa_supplicant/vs2005/win_if_list/win_if_list.vcproj b/wpa_supplicant/vs2005/win_if_list/win_if_list.vcproj
+index e79fc0f..24e5630 100755
+--- a/wpa_supplicant/vs2005/win_if_list/win_if_list.vcproj
++++ b/wpa_supplicant/vs2005/win_if_list/win_if_list.vcproj
+@@ -40,7 +40,7 @@
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+ 				Optimization="0"
+-				AdditionalIncludeDirectories="..\..\..\src\utils;C:\dev\WpdPack\include"
++				AdditionalIncludeDirectories="..\..\..\src\utils;..\..\..\..\WpdPack\include"
+ 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
+ 				MinimalRebuild="true"
+ 				BasicRuntimeChecks="3"
+@@ -49,6 +49,7 @@
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="4"
++				DisableSpecificWarnings="4244"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -63,7 +64,7 @@
+ 				Name="VCLinkerTool"
+ 				AdditionalDependencies="wpcap.lib"
+ 				LinkIncremental="2"
+-				AdditionalLibraryDirectories="C:\dev\WpdPack\lib"
++				AdditionalLibraryDirectories="..\..\..\..\WpdPack\lib"
+ 				GenerateDebugInformation="true"
+ 				SubSystem="1"
+ 				TargetMachine="1"
+@@ -118,13 +119,14 @@
+ 			/>
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+-				AdditionalIncludeDirectories="..\..\..\src\utils;C:\dev\WpdPack\include"
++				AdditionalIncludeDirectories="..\..\..\src\utils;..\..\..\..\WpdPack\include"
+ 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
+ 				RuntimeLibrary="2"
+ 				UsePrecompiledHeader="0"
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="3"
++				DisableSpecificWarnings="4244"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -139,7 +141,7 @@
+ 				Name="VCLinkerTool"
+ 				AdditionalDependencies="wpcap.lib"
+ 				LinkIncremental="1"
+-				AdditionalLibraryDirectories="C:\dev\WpdPack\lib"
++				AdditionalLibraryDirectories="..\..\..\..\WpdPack\lib"
+ 				GenerateDebugInformation="true"
+ 				SubSystem="1"
+ 				OptimizeReferences="2"
+diff --git a/wpa_supplicant/vs2005/wpa_cli/wpa_cli.vcproj b/wpa_supplicant/vs2005/wpa_cli/wpa_cli.vcproj
+index d2de768..997b854 100755
+--- a/wpa_supplicant/vs2005/wpa_cli/wpa_cli.vcproj
++++ b/wpa_supplicant/vs2005/wpa_cli/wpa_cli.vcproj
+@@ -49,7 +49,7 @@
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="4"
+-				DisableSpecificWarnings="4244;4267"
++				DisableSpecificWarnings="4244;4267;4996"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -125,7 +125,7 @@
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="3"
+-				DisableSpecificWarnings="4244;4267"
++				DisableSpecificWarnings="4244;4267;4996"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -180,10 +180,22 @@
+ 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+ 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+ 			>
++			<File
++				RelativePath="..\..\..\src\common\cli.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\utils\common.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\utils\edit_simple.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\utils\eloop_win.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\utils\os_win32.c"
+ 				>
+@@ -196,6 +208,10 @@
+ 				RelativePath="..\..\..\src\common\wpa_ctrl.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\utils\wpa_debug.c"
++				>
++			</File>
+ 		</Filter>
+ 		<Filter
+ 			Name="Header Files"
+diff --git a/wpa_supplicant/vs2005/wpa_passphrase/wpa_passphrase.vcproj b/wpa_supplicant/vs2005/wpa_passphrase/wpa_passphrase.vcproj
+index 97aa2c5..8808892 100755
+--- a/wpa_supplicant/vs2005/wpa_passphrase/wpa_passphrase.vcproj
++++ b/wpa_supplicant/vs2005/wpa_passphrase/wpa_passphrase.vcproj
+@@ -40,7 +40,7 @@
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+ 				Optimization="0"
+-				AdditionalIncludeDirectories="..\..\..\src;..\..\..\src\utils;C:\dev\openssl\include"
++				AdditionalIncludeDirectories="..\..\..\src;..\..\..\src\utils;..\..\..\..\openssl-1.1.1-x86\include"
+ 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
+ 				MinimalRebuild="true"
+ 				BasicRuntimeChecks="3"
+@@ -49,7 +49,7 @@
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="4"
+-				DisableSpecificWarnings="4244;4267"
++				DisableSpecificWarnings="4244;4267;4996"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -62,9 +62,9 @@
+ 			/>
+ 			<Tool
+ 				Name="VCLinkerTool"
+-				AdditionalDependencies="ws2_32.lib"
++				AdditionalDependencies="ws2_32.lib Crypt32.lib libcrypto.lib"
+ 				LinkIncremental="2"
+-				AdditionalLibraryDirectories=""
++				AdditionalLibraryDirectories="..\..\..\..\openssl-1.1.1-x86\lib"
+ 				GenerateDebugInformation="true"
+ 				SubSystem="1"
+ 				TargetMachine="1"
+@@ -119,14 +119,14 @@
+ 			/>
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+-				AdditionalIncludeDirectories="..\..\..\src;..\..\..\src\utils;C:\dev\openssl\include"
++				AdditionalIncludeDirectories="..\..\..\src;..\..\..\src\utils;..\..\..\..\openssl-1.1.1-x86\include"
+ 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
+ 				RuntimeLibrary="2"
+ 				UsePrecompiledHeader="0"
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="3"
+-				DisableSpecificWarnings="4244;4267"
++				DisableSpecificWarnings="4244;4267;4996"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -139,8 +139,9 @@
+ 			/>
+ 			<Tool
+ 				Name="VCLinkerTool"
+-				AdditionalDependencies="ws2_32.lib"
++				AdditionalDependencies="ws2_32.lib Crypt32.lib libcrypto.lib"
+ 				LinkIncremental="1"
++				AdditionalLibraryDirectories="..\..\..\..\openssl-1.1.1-x86\lib"
+ 				GenerateDebugInformation="true"
+ 				SubSystem="1"
+ 				OptimizeReferences="2"
+@@ -186,11 +187,7 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\md5.c"
+-				>
+-			</File>
+-			<File
+-				RelativePath="..\..\..\src\crypto\md5-internal.c"
++				RelativePath="..\..\..\src\crypto\crypto_openssl.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -198,23 +195,15 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\sha1.c"
+-				>
+-			</File>
+-			<File
+-				RelativePath="..\..\..\src\crypto\sha1-internal.c"
++				RelativePath="..\..\..\src\utils\wpa_debug.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\sha1-prf.c"
+-				>
+-			</File>
+-			<File
+-				RelativePath="..\..\..\src\crypto\sha1-pbkdf2.c"
++				RelativePath="..\..\wpa_passphrase.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\wpa_passphrase.c"
++				RelativePath="..\..\..\src\utils\wpabuf.c"
+ 				>
+ 			</File>
+ 		</Filter>
+diff --git a/wpa_supplicant/vs2005/wpa_supplicant/wpa_supplicant.vcproj b/wpa_supplicant/vs2005/wpa_supplicant/wpa_supplicant.vcproj
+index 10c05b5..4eef3de 100755
+--- a/wpa_supplicant/vs2005/wpa_supplicant/wpa_supplicant.vcproj
++++ b/wpa_supplicant/vs2005/wpa_supplicant/wpa_supplicant.vcproj
+@@ -40,7 +40,7 @@
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+ 				Optimization="0"
+-				AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;C:\dev\WpdPack\include;C:\dev\openssl\include"
++				AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;..\..\..\..\WpdPack\include;..\..\..\..\openssl-1.1.1-x86\include"
+ 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
+ 				MinimalRebuild="true"
+ 				BasicRuntimeChecks="3"
+@@ -49,7 +49,7 @@
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="4"
+-				DisableSpecificWarnings="4244;4267;4311"
++				DisableSpecificWarnings="4244;4267;4311;4996"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -62,9 +62,9 @@
+ 			/>
+ 			<Tool
+ 				Name="VCLinkerTool"
+-				AdditionalDependencies="wbemuuid.lib ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libeay32MT.lib ssleay32Mt.lib"
++				AdditionalDependencies="wbemuuid.lib ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libssl.lib libcrypto.lib"
+ 				LinkIncremental="2"
+-				AdditionalLibraryDirectories="C:\dev\WpdPack\lib;C:\dev\openssl\lib"
++				AdditionalLibraryDirectories="..\..\..\..\WpdPack\lib;..\..\..\..\openssl-1.1.1-x86\lib"
+ 				GenerateDebugInformation="true"
+ 				SubSystem="1"
+ 				TargetMachine="1"
+@@ -119,14 +119,14 @@
+ 			/>
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+-				AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;C:\dev\WpdPack\include;C:\dev\openssl\include"
++				AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;..\..\..\..\WpdPack\include;..\..\..\..\openssl-1.1.1-x86\include"
+ 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
+ 				RuntimeLibrary="2"
+ 				UsePrecompiledHeader="0"
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="3"
+-				DisableSpecificWarnings="4244;4267;4311"
++				DisableSpecificWarnings="4244;4267;4311;4996"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -139,9 +139,9 @@
+ 			/>
+ 			<Tool
+ 				Name="VCLinkerTool"
+-				AdditionalDependencies="wbemuuid.lib ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libeay32MT.lib ssleay32Mt.lib"
++				AdditionalDependencies="wbemuuid.lib ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libssl.lib libcrypto.lib"
+ 				LinkIncremental="1"
+-				AdditionalLibraryDirectories="C:\dev\WpdPack\lib;C:\dev\openssl\lib"
++				AdditionalLibraryDirectories="..\..\..\..\WpdPack\lib;..\..\..\..\openssl-1.1.1-x86\lib"
+ 				GenerateDebugInformation="true"
+ 				SubSystem="1"
+ 				OptimizeReferences="2"
+@@ -182,10 +182,6 @@
+ 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+ 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+ 			>
+-			<File
+-				RelativePath="..\..\..\src\crypto\aes-cbc.c"
+-				>
+-			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\crypto\aes-ctr.c"
+ 				>
+@@ -203,25 +199,21 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\aes-unwrap.c"
++				RelativePath="..\..\..\src\utils\base64.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\aes-wrap.c"
++				RelativePath="..\..\..\src\utils\bitfield.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\base64.c"
++				RelativePath="..\..\bss.c"
+ 				>
+ 			</File>
+ 			<File
+ 				RelativePath="..\..\bssid_ignore.c"
+ 				>
+ 			</File>
+-			<File
+-				RelativePath="..\..\bss.c"
+-				>
+-			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\eap_common\chap.c"
+ 				>
+@@ -233,15 +225,51 @@
+ 			<File
+ 				RelativePath="..\..\..\src\utils\config.c"
+ 				>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___utils.obj"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___utils.obj"
++					/>
++				</FileConfiguration>
+ 			</File>
+ 			<File
+ 				RelativePath="..\..\config.c"
+ 				>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___wpasup.obj"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___wpasup.obj"
++					/>
++				</FileConfiguration>
+ 			</File>
+ 			<File
+ 				RelativePath="..\..\config_file.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\utils\crc32.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\crypto\crypto_openssl.c"
+ 				>
+@@ -274,10 +302,26 @@
+ 				RelativePath="..\..\..\src\eap_peer\eap.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_aka.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\eap_common\eap_common.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_fast.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_fast_common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_fast_pac.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\eap_peer\eap_gtc.c"
+ 				>
+@@ -302,6 +346,14 @@
+ 				RelativePath="..\..\..\src\eap_peer\eap_otp.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_pax.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_pax_common.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\eap_peer\eap_peap.c"
+ 				>
+@@ -310,10 +362,26 @@
+ 				RelativePath="..\..\..\src\eap_common\eap_peap_common.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_psk.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_psk_common.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\eap_register.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_sim.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_sim_common.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\eap_peer\eap_tls.c"
+ 				>
+@@ -343,15 +411,27 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\l2_packet\l2_packet_winpcap.c"
++				RelativePath="..\..\..\src\crypto\fips_prf_openssl.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\main.c"
++				RelativePath="..\..\..\src\common\hw_features_common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\common\ieee802_11_common.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\md5.c"
++				RelativePath="..\..\..\src\utils\ip_addr.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\l2_packet\l2_packet_winpcap.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\main.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -371,15 +451,15 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\os_win32.c"
++				RelativePath="..\..\op_classes.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\pcsc_funcs.c"
++				RelativePath="..\..\..\src\utils\os_win32.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\rsn_supp\peerkey.c"
++				RelativePath="..\..\..\src\utils\pcsc_funcs.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -391,15 +471,19 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\scan.c"
++				RelativePath="..\..\..\src\crypto\random.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\sha1.c"
++				RelativePath="..\..\robust_av.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\sha1-pbkdf2.c"
++				RelativePath="..\..\rrm.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\scan.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -410,14 +494,38 @@
+ 				RelativePath="..\..\..\src\crypto\sha1-tlsprf.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\crypto\sha1-tprf.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\crypto\sha256-prf.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\crypto\sha256-tlsprf.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\crypto\tls_openssl.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\crypto\tls_openssl_ocsp.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\eap_peer\tncc.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\twt.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\wmm_ac.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\rsn_supp\wpa.c"
+ 				>
+diff --git a/wpa_supplicant/vs2005/wpasvc/wpasvc.vcproj b/wpa_supplicant/vs2005/wpasvc/wpasvc.vcproj
+index 82d9033..4685e83 100755
+--- a/wpa_supplicant/vs2005/wpasvc/wpasvc.vcproj
++++ b/wpa_supplicant/vs2005/wpasvc/wpasvc.vcproj
+@@ -40,7 +40,7 @@
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+ 				Optimization="0"
+-				AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;C:\dev\WpdPack\include;C:\dev\openssl\include"
++				AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;..\..\..\..\WpdPack\include;..\..\..\..\openssl-1.1.1-x86\include"
+ 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
+ 				MinimalRebuild="true"
+ 				BasicRuntimeChecks="3"
+@@ -49,7 +49,7 @@
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="4"
+-				DisableSpecificWarnings="4244;4267;4311"
++				DisableSpecificWarnings="4244;4267;4311;4996"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -62,9 +62,9 @@
+ 			/>
+ 			<Tool
+ 				Name="VCLinkerTool"
+-				AdditionalDependencies="wbemuuid.lib ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libeay32MT.lib ssleay32Mt.lib"
++				AdditionalDependencies="wbemuuid.lib ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libssl.lib libcrypto.lib"
+ 				LinkIncremental="2"
+-				AdditionalLibraryDirectories="C:\dev\WpdPack\lib;C:\dev\openssl\lib"
++				AdditionalLibraryDirectories="..\..\..\..\WpdPack\lib;..\..\..\..\openssl-1.1.1-x86\lib"
+ 				GenerateDebugInformation="true"
+ 				SubSystem="1"
+ 				TargetMachine="1"
+@@ -119,14 +119,14 @@
+ 			/>
+ 			<Tool
+ 				Name="VCCLCompilerTool"
+-				AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;C:\dev\WpdPack\include;C:\dev\openssl\include"
++                AdditionalIncludeDirectories="..\..;..\..\..\src;..\..\..\src\utils;..\..\..\..\WpdPack\include;..\..\..\..\openssl-1.1.1-x86\include"
+ 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;CONFIG_WIN32_DEFAULTS"
+ 				RuntimeLibrary="2"
+ 				UsePrecompiledHeader="0"
+ 				WarningLevel="3"
+ 				Detect64BitPortabilityProblems="true"
+ 				DebugInformationFormat="3"
+-				DisableSpecificWarnings="4244;4267;4311"
++				DisableSpecificWarnings="4244;4267;4311;4996"
+ 			/>
+ 			<Tool
+ 				Name="VCManagedResourceCompilerTool"
+@@ -139,9 +139,9 @@
+ 			/>
+ 			<Tool
+ 				Name="VCLinkerTool"
+-				AdditionalDependencies="wbemuuid.lib ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libeay32MT.lib ssleay32Mt.lib"
++				AdditionalDependencies="wbemuuid.lib ws2_32.lib Crypt32.lib Winscard.lib Packet.lib wpcap.lib libssl.lib libcrypto.lib"
+ 				LinkIncremental="1"
+-				AdditionalLibraryDirectories="C:\dev\WpdPack\lib;C:\dev\openssl\lib"
++                AdditionalLibraryDirectories="..\..\..\..\WpdPack\lib;..\..\..\..\openssl-1.1.1-x86\lib"
+ 				GenerateDebugInformation="true"
+ 				SubSystem="1"
+ 				OptimizeReferences="2"
+@@ -183,7 +183,15 @@
+ 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+ 			>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\aes-cbc.c"
++				RelativePath="..\..\..\src\common\hw_features_common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\common\ieee802_11_common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\common\wpa_common.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -203,71 +211,91 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\aes-unwrap.c"
++				RelativePath="..\..\..\src\crypto\crypto_openssl.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\aes-wrap.c"
++				RelativePath="..\..\..\src\crypto\fips_prf_openssl.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\base64.c"
++				RelativePath="..\..\..\src\crypto\ms_funcs.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\bssid_ignore.c"
++				RelativePath="..\..\..\src\crypto\random.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\bss.c"
++				RelativePath="..\..\..\src\crypto\sha1-prf.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\eap_common\chap.c"
++				RelativePath="..\..\..\src\crypto\sha1-tlsprf.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\common.c"
++				RelativePath="..\..\..\src\crypto\sha1-tprf.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\config.c"
++				RelativePath="..\..\..\src\crypto\sha256-prf.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\config.c"
++				RelativePath="..\..\..\src\crypto\sha256-tlsprf.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\config_winreg.c"
++				RelativePath="..\..\..\src\crypto\tls_openssl.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\crypto_openssl.c"
++				RelativePath="..\..\..\src\crypto\tls_openssl_ocsp.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\ctrl_iface.c"
++				RelativePath="..\..\..\src\drivers\driver_common.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\ctrl_iface_named_pipe.c"
++				RelativePath="..\..\..\src\drivers\driver_ndis.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\drivers\driver_common.c"
++				RelativePath="..\..\..\src\drivers\driver_ndis_.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\drivers\driver_ndis.c"
++				RelativePath="..\..\..\src\drivers\ndis_events.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\drivers\driver_ndis_.c"
++				RelativePath="..\..\..\src\eap_common\chap.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\drivers\drivers.c"
++				RelativePath="..\..\..\src\eap_common\eap_common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_fast_common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_pax_common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_peap_common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_psk_common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_common\eap_sim_common.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -275,7 +303,15 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\eap_common\eap_common.c"
++				RelativePath="..\..\..\src\eap_peer\eap_aka.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_fast.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_fast_pac.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -302,16 +338,20 @@
+ 				RelativePath="..\..\..\src\eap_peer\eap_otp.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\eap_peer\eap_pax.c"
++				>
++			</File>
+ 			<File
+ 				RelativePath="..\..\..\src\eap_peer\eap_peap.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\eap_common\eap_peap_common.c"
++				RelativePath="..\..\..\src\eap_peer\eap_psk.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\eap_register.c"
++				RelativePath="..\..\..\src\eap_peer\eap_sim.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -331,15 +371,15 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\eapol_supp\eapol_supp_sm.c"
++				RelativePath="..\..\..\src\eap_peer\mschapv2.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\eloop_win.c"
++				RelativePath="..\..\..\src\eap_peer\tncc.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\events.c"
++				RelativePath="..\..\..\src\eapol_supp\eapol_supp_sm.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -347,27 +387,63 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\main_winsvc.c"
++				RelativePath="..\..\..\src\rsn_supp\pmksa_cache.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\md5.c"
++				RelativePath="..\..\..\src\rsn_supp\preauth.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\ms_funcs.c"
++				RelativePath="..\..\..\src\rsn_supp\wpa.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\eap_peer\mschapv2.c"
++				RelativePath="..\..\..\src\rsn_supp\wpa_ie.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\drivers\ndis_events.c"
++				RelativePath="..\..\..\src\utils\base64.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\notify.c"
++				RelativePath="..\..\..\src\utils\bitfield.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\utils\common.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\utils\config.c"
++				>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___utils.obj"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___utils.obj"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath="..\..\..\src\utils\crc32.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\utils\eloop_win.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\..\src\utils\ip_addr.c"
+ 				>
+ 			</File>
+ 			<File
+@@ -379,73 +455,105 @@
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\rsn_supp\peerkey.c"
++				RelativePath="..\..\..\src\utils\wpa_debug.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\rsn_supp\pmksa_cache.c"
++				RelativePath="..\..\..\src\utils\wpabuf.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\rsn_supp\preauth.c"
++				RelativePath="..\..\bss.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\scan.c"
++				RelativePath="..\..\bssid_ignore.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\sha1.c"
++				RelativePath="..\..\config.c"
+ 				>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___wpasup.obj"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						ObjectFile="$(IntDir)\config___wpasup.obj"
++					/>
++				</FileConfiguration>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\sha1-pbkdf2.c"
++				RelativePath="..\..\ctrl_iface.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\sha1-prf.c"
++				RelativePath="..\..\ctrl_iface_named_pipe.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\sha1-tlsprf.c"
++				RelativePath="..\..\eap_register.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\crypto\tls_openssl.c"
++				RelativePath="..\..\events.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\eap_peer\tncc.c"
++				RelativePath="..\..\notify.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\rsn_supp\wpa.c"
++				RelativePath="..\..\op_classes.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\common\wpa_common.c"
++				RelativePath="..\..\robust_av.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\wpa_debug.c"
++				RelativePath="..\..\rrm.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\rsn_supp\wpa_ie.c"
++				RelativePath="..\..\scan.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\wpa_supplicant.c"
++				RelativePath="..\..\twt.c"
+ 				>
+ 			</File>
+ 			<File
+-				RelativePath="..\..\..\src\utils\wpabuf.c"
++				RelativePath="..\..\wmm_ac.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\wpa_supplicant.c"
+ 				>
+ 			</File>
+ 			<File
+ 				RelativePath="..\..\wpas_glue.c"
+ 				>
+ 			</File>
++			<File
++				RelativePath="..\..\..\src\drivers\drivers.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\config_winreg.c"
++				>
++			</File>
++			<File
++				RelativePath="..\..\main_winsvc.c"
++				>
++			</File>
+ 		</Filter>
+ 		<Filter
+ 			Name="Header Files"
+diff --git a/wpa_supplicant/win_if_list.c b/wpa_supplicant/win_if_list.c
+index 39634d9..3191c5c 100644
+--- a/wpa_supplicant/win_if_list.c
++++ b/wpa_supplicant/win_if_list.c
+@@ -16,7 +16,7 @@
+ #include <ntddndis.h>
+ #else /* CONFIG_USE_NDISUIO */
+ #include "pcap.h"
+-#include <winsock.h>
++#include <winsock2.h>
+ #endif /* CONFIG_USE_NDISUIO */
+ 
+ #ifdef CONFIG_USE_NDISUIO
+diff --git a/wpa_supplicant/wpa_cli.c b/wpa_supplicant/wpa_cli.c
+index 033589f..47a4a20 100644
+--- a/wpa_supplicant/wpa_cli.c
++++ b/wpa_supplicant/wpa_cli.c
+@@ -4340,12 +4340,12 @@ static void wpa_cli_action_process(const char *msg)
+ }
+ 
+ 
+-#ifndef CONFIG_ANSI_C_EXTRA
++/*#ifndef CONFIG_ANSI_C_EXTRA*/
+ static void wpa_cli_action_cb(char *msg, size_t len)
+ {
+ 	wpa_cli_action_process(msg);
+ }
+-#endif /* CONFIG_ANSI_C_EXTRA */
++/*#endif*/ /* CONFIG_ANSI_C_EXTRA */
+ 
+ 
+ static int wpa_cli_open_global_ctrl(void)
+diff --git a/wpa_supplicant/wpa_gui-qt4/addinterface.cpp b/wpa_supplicant/wpa_gui-qt4/addinterface.cpp
+index 7d92f63..b577d76 100644
+--- a/wpa_supplicant/wpa_gui-qt4/addinterface.cpp
++++ b/wpa_supplicant/wpa_gui-qt4/addinterface.cpp
+@@ -14,6 +14,11 @@
+ #include "wpagui.h"
+ #include "addinterface.h"
+ 
++#if defined(_MSC_VER) && (_MSC_VER < 1900)
++#undef snprintf
++#define snprintf _snprintf
++#endif
++
+ #ifdef CONFIG_NATIVE_WINDOWS
+ #include <windows.h>
+ 
+@@ -148,7 +153,7 @@ bool AddInterface::addRegistryInterface(const QString &ifname)
+ #ifdef UNICODE
+ 	wsprintf(name, L"%04d", id);
+ #else /* UNICODE */
+-	os_snprintf(name, sizeof(name), "%04d", id);
++	snprintf(name, sizeof(name), "%04d", id);
+ #endif /* UNICODE */
+ 	ret = RegCreateKeyEx(hk, name, 0, NULL, 0, KEY_WRITE, NULL, &ihk,
+ 			     NULL);
+@@ -163,7 +168,7 @@ bool AddInterface::addRegistryInterface(const QString &ifname)
+ 
+ #else /* UNICODE */
+ 	RegSetValueEx(ihk, TEXT("adapter"), 0, REG_SZ,
+-		      (LPBYTE) ifname.toLocal8Bit(), ifname.length() + 1);
++		      (LPBYTE) ifname.toLocal8Bit().constData(), ifname.length() + 1);
+ #endif /* UNICODE */
+ 	RegSetValueEx(ihk, TEXT("config"), 0, REG_SZ,
+ 		      (LPBYTE) TEXT("default"), 8 * sizeof(TCHAR));
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/ap.png b/wpa_supplicant/wpa_gui-qt4/icons/ap.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..0131386b0fd9a13008de45dc92b97bfa71648ab1
+GIT binary patch
+literal 816
+zcmV-01JC@4P)<h;3K|Lk000e1NJLTq001BW001Be1^@s6b9#F80008_Nkl<ZSi|jB
+zOG_L<5U!r-on7}eB0(_hY9Jwd+CcCgJVtX$E`gjp`3nL$CVwFR!CS5Y10KDYje@vd
+zB%lODSVcGB>b~chuiBYm6%7d_GdZN7n0{7$U0wC{==AsHBeV>y-83m<08oXV-!`em
+z0Kos*WE=pzqybRU0RCS=;t}`{fXPlI34nd*Nk>2?2|)iB0Ni>7qsbwv)#@wH^Qyn;
+zz|u6Wd)wr}!NF50<$0-8`oewK|GK-o`-uXAiU2GwF23E`+IkoEZQCXx1X-3vhGFnV
+zavbMMJDpCeb=)5t8>7KsK)&x&CX-S7cs!fUQm@xj-%!fs^6S;r)%RDfU^pB;A4Q%@
+zr3lE?M*gzn>up`vl{0QLSO&puL?jw#8Fe1mez~!+QH%g=Z*R{W9v)6mOmcjDe5X(-
+zJc<Au9UaYGTwF}W1)$&Wm)q_3Yy_ZIt3AQpNs3Qoy<V?G0QUFyrzmFG+uNH|0M^#l
+zGN-4fGjRhz&P}bXtYkIUb>~{GRw-@(jYeZ)dU|?RLpeM{ITg8d;*?IObMNfzY)+za
+zA4E}SW&(%-(<bT^rEV}H;a|!SBx9*N)3g)_$Uxn@P=|*w=LB@iV?H=Q7nkBOQ9-rf
+zfJ4~z(PsM+<^NFb?Cj)`1CJ>I0noNUGPKv%*BgjJ4)p5t$(i901smMpqh_PK;nRU$
+z1=iXlc0A;f9Yn{+9?2BU#~*cuF^)z*?2nI+rxz9$CIudgR=3+Vo6ROIFE0~}DJo?n
+zOuMOkigZT-QasOgd5+hyxQ0uGY=JaKqtGWGfZq!4v$DN>J|BUZpPyHBUMv>BODyQY
+zu*uFsr~G9jcps?icggEq_W6MclQn#7ENS7fm!!Kop_-!op<~X0Q2_%|rBYFfbv?1U
+zx%uYg<m5#zm%H*7a0p>QLIs>_L5OXDz5aiv*5NcB01F1q2}(Eo2f~gKnAWkUX`1E-
+uv9z>g;xwNzarY186$3SYaqTx;`GX&4n_<zmUyoe?0000<MNUMnLSTYD=6$yS
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/group.png b/wpa_supplicant/wpa_gui-qt4/icons/group.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..65086cb2a584af18c700c3811c4385375628d14c
+GIT binary patch
+literal 1269
+zcmV<R1Pc3!P)<h;3K|Lk000e1NJLTq001BW001Be1^@s6b9#F8000EMNkl<ZSi|L3
+zOK4nG82;~b-sv>PXwir%t)Pn_)*@(7K^KA++_+K@ku2N@BJHZn3U(n~1uTSQDXx{Q
+z;!0eKizJXNLTqD%N|Tvp=FZ&Lx!3PM=bq_pIuo5Vv+99=&f}gr|98Isb%-AKX7JC}
+z*4B5XX?_MF%d%)dFCbr*%jF+V5`fJ=aU9S7x#yp5M+QYvOko&N5JeR87=3{Gv*RWD
+z;H?W6v3(=}XwSE3bKj&+H>P$cqISDOEe|4lk3M|mDH1}QxCtbHBuOX;BHC*N6akFy
+z2h<Hhd2?nUiUe7vA%TtrKm;YM@NT0iZ^<U`G4BFMr|V-LkPQGMV*pO(u)@3hO-e)}
+zS>T)VnutPj(ugcdN5_DR_RJF%y72rdX$}DpKmv)$NMkb7gr3ItkpZx6+kJJqPA^YY
+zCCw~pnv!7{4}{~$OmJ{;aKmw&>tPrcpg3hk%miA>Jp(8fi+5_Z+K(rmh<0{%-h+a#
+zq5Ld#TbW{}+vG7b!GgJueYXMb+Su6GS+H{%bC+3Sfc<)Ajr&7u3C{buTCIL10c>n+
+zER;&6&)L2l4cr$B1*w#o;57!K?eF{k&B@8hH*w&LgA^at>oLwAuh;7hyN!&4MjAlo
+z69~Ofu4$jp_6IO;Vq(H>cYOM*iSIIxq!J`YPzr|yXCz|5n<-K3(E$<~=as4PBEA34
+z8_a|wb>T+eLh(O1*yWA#pv(+fsa}Klp64x0PfuS;P)0UeWs2cOQI@XN1rixGHajkW
+z*cPJ9ERb-D^xNibx>RvV`;`PRJ3IR~`fI~D&f40VtYbb{3WPFI6bo5LxQ1{Dn^0~U
+zEJTjQV$e&^P2lEn?}EK3$hW1XrSo9o>fGGir-J~f5H)4WM%j?G3!y=9`c{dI8L&)d
+zKml-U<p&G^O!fx=<x_Byw~t~#nZ`h>_Q?xWl;{M;SyV~}g7-QM0I8fom}lxoGw^>J
+zA7J1%Q5cig345W+0AeVV!T>TL_t-38$+b8F6abEdV*}vw!A}{aEYO>xkVVu9lx+p<
+zAIA(NMlUiZm=*X6)-0HSS>Z@KHUNZ>X;?PhYk5>H6+sEdbxN&HEUT)}EHHpr0Wkp9
+zg4mY%=q7+8Sq8FPv(=?L`)zviR7oCGuu=+*L`DL$!XOArIV?>MPg3s+27vtYNB~S1
+z4)x6^7qcV;`)6rerEfJx5OB<7V|DA2>-;wZaFF8S;^Mn~ygxvA{t6RVrDB2HEJLaY
+zP#IB(`#@CMH6KdJM*_g6T^!Ja-0XwRo1dS5z13>{f$DhX5a^x~UCK2O{XN(3?C$RF
+z%lUCku)MrnKsCG3Xf(cH2K3>56g{+7sZ@SJE%|6>W~Om00NdN!-{Y3A;bt|+Y5jQ7
+zqVvR{9w0acHZg8Pt_%fWeSQ5LZty!^aAR7ru9VsY`VEjPV7Wvk9$1Gde;O(ZkmqZt
+zo@G{`OLe|v<5eXEdwNRpO0`e0@IHKVhXQ~%0&|=mR?K5Q9L!L++Z_lX4}>2*G9wNN
+zU<-e`1tsV1ho3S9r`G&~wjcF+&SRXxj<Gqk6RxbRyZ|Ts7>C&Tc-Bw0{94}m^jJG8
+f+O5^q)rEfnJSZ7E!pV>h00000NkvXXu0mjf-wa7p
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/invitation.png b/wpa_supplicant/wpa_gui-qt4/icons/invitation.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..bb31be73d6b37945fe426d7c8f4da39de0dd4057
+GIT binary patch
+literal 1458
+zcmV;j1x@;iP)<h;3K|Lk000e1NJLTq001BW001Be1^@s6b9#F8000GfNkl<ZSi|j>
+zTWp+16~}+yWq0je@2>6j+DVM<n3bJiaZ@W43Ir-aP$`ruNKuI@wW?GpfJC8!76l}P
+z#7)2hi1Nf6FG#$A1c*08X$VPdwMv_&C5hd%iS7Eb-rKjk-)&|N54&}f;KnfuPvl6W
+z?~`Wc{C{(1=FEXR_Wy3yPA5z}mcA>OE_|!6H$UUpiM$alK@ikht;WB?!29v*ziplU
+zp8&l7iP7V`iWA4*H-2~ao_+U{O!g4z2tW2|M?MvAgXhnm<nq#`T5WCZM+?6z|LnE^
+zl)f@Jw!8mba}VBgbmTzkAn8OeHV%;qX+|wtQHw^{#0x!|L5pV4<l^OXym;=^(%O3a
+zz{a09mTu<XxmoArqs5O;PrhgN*yo<=FAeV_o6L|)<>*UhF=9}niA+qaW8&^N(lNd1
+zEF&Wmxq5B+%kGH(tT(T&?igVDONG&i@zUHwhmQ565-DuEGt{ze26A~u26r)09AkQ9
+zipik~1~Y?H+f^#<Dp4E~8%<$oG*Pas9hK4WH~ze8Y^7tr6F^_4f9{hXIouN%pQdV3
+zS9P?bm>JtoF;`@vyug{)=UA*Rl5$e)9T?}x2M;qfTp}_t$|w|ysrTO9o6TfSzLU<D
+z0Q(;w`o_%6hj)ioj2C;<RfB3=WqNoT2M4V+S`06(z099p{R<7>Lu-vOhWqv%!e9th
+zNTg!4B@{;|$M@WydFs|9kWC%$9qy;8JsQfR9@nX;8rei2T5FV2>>HfI*KO9rGRuwS
+z4wTj;ESExNfOhN?sE|-aB>VH&sr1uZNx56y^B|)O&qgO0w?-M4F>;c_6_<<Ed1m_e
+zBO<ipHfuqdAPxXFBOoH2t(;?a<$3JTA#Kw1CHhEaGKHaot-H!6+ArJ`K*agFHP(mL
+zF>jbFT;VEtJ4e6dSzcJ;Q1MgbojiYC{Tt`Q^Y}X8>C}@br4SJsVS{t4uOJ3u9aHsd
+zRCSGPK5f}a^EKenn*tb{l9g}}B}gn_L&I+1xgJ+#kr!6aBD&LOlyIc@1zd5_Mx%`4
+z2d92Y5Cvca3?PCCcySvC``z1afo<6X9dQd|3$_KufaS_&+7b<-1XsCyanBL7)>Ok9
+z-#z_(PQ5YL0W{rlx;qEKU=MB!AVwgTx5Wi4Em+Fx00>>@!UMyfrQi<oQu$@RJ^MXY
+zt81OesScoMx!yO(wgAMYVq(Fz3`Q(0V__)^%aQ8<&~SLy1H4+jz*qnAP1?SX#2~SB
+z#rY2aVySF@4UJh4Ph&#qv_LR{!T8c?L8nP53@3{GVd0M*@klUn=WM*yFxU7E4JbXo
+zZ7MFzBroe&j!8CUA#|J=K+ERdza?Oc%|Dk;Q)|^Rk-QDj{lD(jTWyNll*d|2@#?m(
+z;hu+cD`t9V#Bwcg!LltZ``W7tj#%u?>}9=KrrN3@F<l6QiEdauU|rZ)sr<dY`<5P~
+z{FEIUaXuqGE_4r^C;<(kASp?H@zI~~$n;SjoV=fl>kBMyEOjEYg*Y2NQVqTnEb242
+zl!_OB??2;|Td$d>?(BbX%~=Qx2MQmel$}Itjf2BO(}y?DjNB-$46@RiubmEmxue%G
+zj8X^fE4BKy!p0Z0FVq|L&D^h)qS~x=RxVpOTBv)D@$cPnJ<z_;_VSbVbJ7Tp=wvb_
+zVs-Dhuv}fC$4N1k8)cz<nP*P^8ZT^K??4;4RBKqizOQmdz4Bj|WJ8~4kFC?snS8pW
+z`+9G!&|LR1>#a+!<$t1lf;VqVQCj?T?-RJrag$1nn1Qr~d&BO925X}wc+sl(^26$^
+z|Et?ll-_8=AIp3|68cGOyQHxP5I{+VSik0K=jUs)trxjtcWejtZ-;7U+1?rRw*UYD
+M07*qoM6N<$f@a;%ZvX%Q
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/laptop.png b/wpa_supplicant/wpa_gui-qt4/icons/laptop.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..838ffca64464a0a854a33040d6ee2d4b8f4fc346
+GIT binary patch
+literal 1939
+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
+Z{stOUPS?i_a;5+P002ovPDHLkV1l2E!lVEI
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/0.png b/wpa_supplicant/wpa_gui-qt4/icons/status/0.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..d1953c13643c327d1e64e4a8e762a66b7f470b07
+GIT binary patch
+literal 129
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!93?!50ihlx9JOMr-u8B!GKqkX~hBIf*JTgpb
+z2eKJUg8YIR9G=}s19Fr-T^vI=qDzk`GBOzOuxy-BWBI&xMFC@@<8`O&UF$-BZO!GM
+WcuUkgwNrT_$RJNwKbLh*2~7anMI{*k
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/1.png b/wpa_supplicant/wpa_gui-qt4/icons/status/1.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..7a690e7079d761f2fa8424a072cfe30f9e3bb473
+GIT binary patch
+literal 130
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!93?!50ihlx9JOMr-t`FVU0htW{8P1$J!&&|z
+z56EUL3GxeOaCmkj4aiaPba4#fxSpJlkify3)D|Tn$fcB(=%UfFqE&FAf|9VfAQuZm
+XSDwh_DQi9+2btvQ>gTe~DWM4fy>B9I
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/2.png b/wpa_supplicant/wpa_gui-qt4/icons/status/2.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..7abdc9536732b681bbb13f4eaf83785ea0fea67d
+GIT binary patch
+literal 130
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!93?!50ihlx9JOMr-uBp1|KqkX~hBIf*#H9PH
+z0ojZtL4Lsu4$p3+0XZt3E{-7_*OL<x5;$0s+M*-`xs<XJT{JpQv<NO#P!bjw<YHl{
+WsuMBRi}}C~GRf1`&t;ucLK6Tb(H`;u
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/3.png b/wpa_supplicant/wpa_gui-qt4/icons/status/3.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..7af7a58b27611fe01ed717191e47131215aec9ce
+GIT binary patch
+literal 130
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!93?!50ihlx9JOMr-t_-O_76Ze7hBIf*Y*yPm
+z7szHT3GxeOaCmkj4aiaPba4#fxSpJlkify3)D|Tn$fabI=%UeaqD63_f|9VfAQuZm
+X+&|&)`haa9vl%>H{an^LB{Ts5JPIGB
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/status/4.png b/wpa_supplicant/wpa_gui-qt4/icons/status/4.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..7b9369085662530603dd9a38a49fdcd039c952bb
+GIT binary patch
+literal 127
+zcmeAS@N?(olHy`uVBq!ia0vp^0wB!93?!50ihlx9oB=)|u8B!GKqkX~hSqilCLn{c
+zB*-tA!Qt7BG$2RC)5S4_Bf9j6A|rzV56i|GHG<FY9|(BJ#MHd5b)9JJ>Mz;1<xCz4
+U+0U5cSO_x4)78&qol`;+0Oq42J^%m!
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/wpa_gui.ico b/wpa_supplicant/wpa_gui-qt4/icons/wpa_gui.ico
+new file mode 100644
+index 0000000000000000000000000000000000000000..d16b32e2f4ac25afe9aa8550b6f3b5f1b9ef562f
+GIT binary patch
+literal 34494
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons/wpa_gui.png b/wpa_supplicant/wpa_gui-qt4/icons/wpa_gui.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..47259d15f68108c2f77956b4eade83f47bad9745
+GIT binary patch
+literal 744
+zcmV<E0vG*>P)<h;3K|Lk000e1NJLTq000mG000mO1^@s6AM^iV00087Nkl<ZI8R)U
+zy^exV5QXoXSg{+lv>-;IAOQ&>MiUT7NC?s3&ojV-KuFNWN7%yHZ`Rmr2XAl-YwnSI
+z%RSX(=6rKz2<bJO%{)!hsAXAfKA%I^b(p3J+qSV-EU;WI;kqv3IL7gKWNDhxBuQM(
+zlIe8%J()}xH*;vcUgK~$psFg|ZZ}-7R}@8o{eBP6^MuE797IvXR;$$)8I4ANs;VLk
+zL+o}toX=-aO7UO3cRHQWry~dg7={5wQGSUm%T$si_`WY-#u%EW5vh5eBg-<BWr?<J
+z#jLJt;pNPDJf@^C-oxQgoY-|8?)N)3n+-0P3!cv>Uayy^x7#fqkB9K^7dg{k|0aXM
+zKrHzA5J~N-3PV9K|6!FFQYD>!L@EpGG-)GI`~XQ22#B_RMaY8~!C$fS0k;(cc@Sam
+znJMmF7})dJncX?(a*?)eISO*b?RFy&=ku9oxKr0P38vF&qv^Wdpq=OQDc9>&lrdCE
+z(^NdqBeE=$@AoT<#e$~Z?{|&>aSbenVaPa+ayp&(REX7TMb)aRBn(6DfehXZ!yrmn
+zCX-2{nWjmC*Xu>q`Ft*Y-?L4}aR}sH*U4-)lRVGm@puSoNB|SDD9cjb?>C&4{eDly
+zD2gPGW9CVckQ{f4qWCAUEUQ5~uIqAkD5&?9AP8i$*$@~3dk}#a_^p2<*tY$_LU|#_
+z<B@6@1>e{AeF8a(5r@NpcTuD8(bRMNz)`fM{E+o}E!*vuD$C`PK)&1Ueg_r@sR5}4
+zVFd++XAD9@LfsAy4sbz`>3Vv4|3S&y#l;1TL2Qs1NDihBn27%K^YeFr@)L`cl+;s4
+zN5}ubT=^eln6tAp*j8_EZ+LDD3JL=AL2{t*5D*Y}3ew8}1)M-!55&iS_!0pOQd0-j
+a!vFw+!X_tWQJN+I0000<MNUMnLSTYRVObdf
+
+literal 0
+HcmV?d00001
+
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons_png.qrc b/wpa_supplicant/wpa_gui-qt4/icons_png.qrc
+index 9a30b7f..6f952bb 100644
+--- a/wpa_supplicant/wpa_gui-qt4/icons_png.qrc
++++ b/wpa_supplicant/wpa_gui-qt4/icons_png.qrc
+@@ -1,9 +1,9 @@
+ <RCC>
+  <qresource prefix="/icons" >
+-  <file alias="wpa_gui.png">icons/hicolor/16x16/apps/wpa_gui.png</file>
+-  <file alias="ap.png">icons/hicolor/32x32/apps/ap.png</file>
+-  <file alias="laptop.png">icons/hicolor/32x32/apps/laptop.png</file>
+-  <file alias="group.png">icons/hicolor/32x32/apps/group.png</file>
+-  <file alias="invitation.png">icons/hicolor/32x32/apps/invitation.png</file>
++  <file alias="wpa_gui.png">icons/wpa_gui.png</file>
++  <file alias="ap.png">icons/ap.png</file>
++  <file alias="laptop.png">icons/laptop.png</file>
++  <file alias="group.png">icons/group.png</file>
++  <file alias="invitation.png">icons/invitation.png</file>
+  </qresource>
+ </RCC>
+diff --git a/wpa_supplicant/wpa_gui-qt4/icons_status.qrc b/wpa_supplicant/wpa_gui-qt4/icons_status.qrc
+new file mode 100644
+index 0000000..8e83891
+--- /dev/null
++++ b/wpa_supplicant/wpa_gui-qt4/icons_status.qrc
+@@ -0,0 +1,12 @@
++<RCC>
++ <qresource prefix="/icons/status" >
++  <file alias="network-wireless-offline.png">icons/wpa_gui.png</file>
++  <file alias="network-wireless-acquiring.png">icons/wpa_gui.png</file>
++  <file alias="network-wireless-connected.png">icons/wpa_gui.png</file>
++  <file alias="network-wireless-signal-none.png">icons/status/0.png</file>
++  <file alias="network-wireless-signal-weak.png">icons/status/1.png</file>
++  <file alias="network-wireless-signal-ok.png">icons/status/2.png</file>
++  <file alias="network-wireless-signal-good.png">icons/status/3.png</file>
++  <file alias="network-wireless-signal-excellent.png">icons/status/4.png</file>
++ </qresource>
++</RCC>
+diff --git a/wpa_supplicant/wpa_gui-qt4/networkconfig.cpp b/wpa_supplicant/wpa_gui-qt4/networkconfig.cpp
+index 2727318..3637802 100644
+--- a/wpa_supplicant/wpa_gui-qt4/networkconfig.cpp
++++ b/wpa_supplicant/wpa_gui-qt4/networkconfig.cpp
+@@ -12,6 +12,11 @@
+ #include "networkconfig.h"
+ #include "wpagui.h"
+ 
++#if defined(_MSC_VER) && (_MSC_VER < 1900)
++#undef snprintf
++#define snprintf _snprintf
++#endif
++
+ enum {
+ 	AUTH_NONE_OPEN,
+ 	AUTH_NONE_WEP,
+diff --git a/wpa_supplicant/wpa_gui-qt4/peers.cpp b/wpa_supplicant/wpa_gui-qt4/peers.cpp
+index 0a0b3ff..cf231f4 100644
+--- a/wpa_supplicant/wpa_gui-qt4/peers.cpp
++++ b/wpa_supplicant/wpa_gui-qt4/peers.cpp
+@@ -15,6 +15,11 @@
+ #include "stringquery.h"
+ #include "peers.h"
+ 
++#if defined(_MSC_VER) && (_MSC_VER < 1900)
++#undef snprintf
++#define snprintf _snprintf
++#endif
++
+ 
+ enum {
+ 	peer_role_address = Qt::UserRole + 1,
+diff --git a/wpa_supplicant/wpa_gui-qt4/scanresults.cpp b/wpa_supplicant/wpa_gui-qt4/scanresults.cpp
+index a2e3072..7f2d76a 100644
+--- a/wpa_supplicant/wpa_gui-qt4/scanresults.cpp
++++ b/wpa_supplicant/wpa_gui-qt4/scanresults.cpp
+@@ -14,6 +14,11 @@
+ #include "networkconfig.h"
+ #include "scanresultsitem.h"
+ 
++#if defined(_MSC_VER) && (_MSC_VER < 1900)
++#undef snprintf
++#define snprintf _snprintf
++#endif
++
+ 
+ ScanResults::ScanResults(QWidget *parent, const char *, bool, Qt::WindowFlags)
+ 	: QDialog(parent)
+diff --git a/wpa_supplicant/wpa_gui-qt4/wpa_gui.pro b/wpa_supplicant/wpa_gui-qt4/wpa_gui.pro
+index 3fa734b..d04a033 100644
+--- a/wpa_supplicant/wpa_gui-qt4/wpa_gui.pro
++++ b/wpa_supplicant/wpa_gui-qt4/wpa_gui.pro
+@@ -8,22 +8,21 @@ CONFIG	+= qt warn_on release
+ DEFINES += CONFIG_CTRL_IFACE
+ 
+ win32 {
+-  LIBS += -lws2_32 -static
+-  DEFINES += CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
++  LIBS += -lws2_32 -lcrypt32 -lgdi32 -ladvapi32 -luser32 -static
++  DEFINES += NOMINMAX CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
+   SOURCES += ../../src/utils/os_win32.c
++  RC_FILE = wpa_gui.rc
+ } else:win32-g++ {
+   # cross compilation to win32
+-  LIBS += -lws2_32 -static -mwindows
+-  DEFINES += CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
++  LIBS += -lws2_32 -lcrypt32 -lgdi32 -ladvapi32 -luser32 -static -mwindows
++  DEFINES += NOMINMAX CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
+   SOURCES += ../../src/utils/os_win32.c
+-  RESOURCES += icons_png.qrc
+ } else:win32-x-g++ {
+   # cross compilation to win32
+-  LIBS += -lws2_32 -static -mwindows
+-  DEFINES += CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
++  LIBS += -lws2_32 -lcrypt32 -lgdi32 -ladvapi32 -luser32 -static -mwindows
++  DEFINES += NOMINMAX CONFIG_NATIVE_WINDOWS CONFIG_CTRL_IFACE_NAMED_PIPE
+   DEFINES += _X86_
+   SOURCES += ../../src/utils/os_win32.c
+-  RESOURCES += icons_png.qrc
+ } else {
+   DEFINES += CONFIG_CTRL_IFACE_UNIX
+   SOURCES += ../../src/utils/os_unix.c
+@@ -56,7 +55,7 @@ SOURCES	+= main.cpp \
+ 	stringquery.cpp \
+ 	../../src/common/wpa_ctrl.c
+ 
+-RESOURCES += icons.qrc
++RESOURCES += icons.qrc icons_png.qrc icons_status.qrc
+ 
+ FORMS	= wpagui.ui \
+ 	eventhistory.ui \
+diff --git a/wpa_supplicant/wpa_gui-qt4/wpa_gui.rc b/wpa_supplicant/wpa_gui-qt4/wpa_gui.rc
+new file mode 100644
+index 0000000..ac9308c
+--- /dev/null
++++ b/wpa_supplicant/wpa_gui-qt4/wpa_gui.rc
+@@ -0,0 +1 @@
++IDI_ICON1 ICON DISCARDABLE icons/wpa_gui.ico
+diff --git a/wpa_supplicant/wpa_gui-qt4/wpagui.cpp b/wpa_supplicant/wpa_gui-qt4/wpagui.cpp
+index 9404ab4..9cd84a7 100644
+--- a/wpa_supplicant/wpa_gui-qt4/wpagui.cpp
++++ b/wpa_supplicant/wpa_gui-qt4/wpagui.cpp
+@@ -11,21 +11,31 @@
+ #endif /* CONFIG_NATIVE_WINDOWS */
+ 
+ #include <cstdio>
+-#include <unistd.h>
+-#include <chrono>
+-#include <thread>
+ #include <QMessageBox>
+ #include <QCloseEvent>
+ #include <QImageReader>
+ #include <QSettings>
++#include <QThread>
++#include <QDir>
++#include <QFileInfo>
++#include <QDebug>
++#include <QMap>
+ 
+ #include "wpagui.h"
++#ifdef CONFIG_CTRL_IFACE_UNIX
+ #include "dirent.h"
++#endif
+ #include "common/wpa_ctrl.h"
+ #include "userdatarequest.h"
+ #include "networkconfig.h"
+ 
+ 
++#if defined(_MSC_VER) && (_MSC_VER < 1900)
++#undef snprintf
++#define snprintf _snprintf
++#endif
++
++
+ #ifndef QT_NO_DEBUG
+ #define debug(M, ...) qDebug("DEBUG %d: " M, __LINE__, ##__VA_ARGS__)
+ #else
+@@ -33,6 +43,17 @@
+ #endif
+ 
+ 
++namespace {
++
++class ThreadSleep: public QThread
++{
++public:
++	static void msleep(int ms) { QThread::msleep(ms); }
++};
++
++}
++
++
+ WpaGui::WpaGui(QApplication *_app, QWidget *parent, const char *,
+ 	       Qt::WindowFlags)
+ 	: QMainWindow(parent), app(_app)
+@@ -240,23 +261,43 @@ void WpaGui::languageChange()
+ 
+ void WpaGui::parse_argv()
+ {
+-	int c;
+-	WpaGuiApp *app = qobject_cast<WpaGuiApp*>(qApp);
+-	for (;;) {
+-		c = getopt(app->argc, app->argv, "i:m:p:tq");
+-		if (c < 0)
+-			break;
++	const QStringList originalArgs = qApp->arguments();
++	QMap<char, QString> args;
++	for (QStringList::ConstIterator it = originalArgs.constBegin() + 1; it != originalArgs.constEnd(); ++it) {
++		QString::ConstIterator cit = it->constBegin();
++		char c = cit->toLatin1();
++		if (c != '-' && c != '/') {
++			qWarning() << "Invalid argument" << (*it);
++			continue;
++		}
++		for (++cit; cit != it->constEnd() && cit->toLatin1() != '\0'; ++cit) {
++			c = cit->toLatin1();
++			if (c == 'i' || c == 'm' || c == 'p') {
++				if (it + 1 == originalArgs.constEnd() || !(cit + 1 == it->constEnd() || (cit + 1)->toLatin1() == '\0')) {
++					qWarning() << "No option for switch " << c << "from" << (*it);
++					continue;
++				}
++				++it;
++				args.insert(c, *it);
++			} else {
++				args.insert(c, QString());
++			}
++		}
++	}
++	for (QMap<char, QString>::ConstIterator it = args.constBegin() + 1; it != args.constEnd(); ++it) {
++		const char c = it.key();
++		const QString optarg = it.value();
+ 		switch (c) {
+ 		case 'i':
+ 			free(ctrl_iface);
+-			ctrl_iface = strdup(optarg);
++			ctrl_iface = strdup(optarg.toLocal8Bit().data());
+ 			break;
+ 		case 'm':
+-			signalMeterInterval = atoi(optarg) * 1000;
++			signalMeterInterval = atoi(optarg.toLocal8Bit().data()) * 1000;
+ 			break;
+ 		case 'p':
+ 			free(ctrl_iface_dir);
+-			ctrl_iface_dir = strdup(optarg);
++			ctrl_iface_dir = strdup(optarg.toLocal8Bit().data());
+ 			break;
+ 		case 't':
+ 			startInTray = true;
+@@ -720,7 +761,7 @@ void WpaGui::updateNetworks()
+ 			continue;
+ 
+ 		/* avoid race conditions */
+-		std::this_thread::sleep_for(std::chrono::milliseconds(200));
++		ThreadSleep::msleep(200);
+ 		QString cmd("LIST_NETWORKS LAST_ID=");
+ 		cmd.append(id);
+ 		if (ctrlRequest(cmd.toLocal8Bit().constData(), buf, &len) < 0)
+@@ -1375,6 +1416,7 @@ void WpaGui::createTrayIcon(bool trayOnly)
+ 	QApplication::setQuitOnLastWindowClosed(false);
+ 
+ 	tray_icon = new QSystemTrayIcon(this);
++	currentIconType = TrayIconConnected;
+ 	updateTrayIcon(TrayIconOffline);
+ 
+ 	connect(tray_icon,
+@@ -1577,7 +1619,21 @@ QIcon WpaGui::loadThemedIcon(const QStringList &names,
+ 
+ 	for (QStringList::ConstIterator it = names.begin();
+ 	     it != names.end(); it++) {
++#if QT_VERSION > 0x040600
+ 		icon = QIcon::fromTheme(*it);
++#else
++		if (QDir::isAbsolutePath(*it) && QFileInfo(*it).exists())
++			icon = QIcon(*it);
++#endif
++		if (!icon.isNull())
++			return icon;
++	}
++
++	for (QStringList::ConstIterator it = names.begin();
++	     it != names.end(); it++) {
++		const QString path = QString::fromLatin1(":/icons/status/%1.png").arg(*it);
++		if (QFileInfo(path).exists())
++			icon = QIcon(path);
+ 		if (!icon.isNull())
+ 			return icon;
+ 	}
+@@ -1790,7 +1846,11 @@ void ErrorMsg::showMsg(QString msg)
+ 			  FORMAT_MESSAGE_FROM_SYSTEM,
+ 			  NULL, err, 0, (LPTSTR) (void *) &buf,
+ 			  0, NULL) > 0) {
++#ifdef UNICODE
+ 		QString msg = QString::fromWCharArray(buf);
++#else
++		QString msg = QString::fromLocal8Bit(buf);
++#endif
+ 		setInformativeText(QString("[%1] %2").arg(err).arg(msg));
+ 		LocalFree(buf);
+ 	} else {
+diff --git a/wpa_supplicant/wpa_supplicant.c b/wpa_supplicant/wpa_supplicant.c
+index d37a994..d6f5114 100644
+--- a/wpa_supplicant/wpa_supplicant.c
++++ b/wpa_supplicant/wpa_supplicant.c
+@@ -15,6 +15,9 @@
+ #include <net/if.h>
+ #include <fnmatch.h>
+ #endif /* CONFIG_MATCH_IFACE */
++#ifdef CONFIG_FORCE_DHCP_RENEW
++#include <iphlpapi.h>
++#endif /* CONFIG_FORCE_DHCP_RENEW */
+ 
+ #include "common.h"
+ #include "crypto/random.h"
+@@ -926,6 +929,61 @@ void wpa_supplicant_set_state(struct wpa_supplicant *wpa_s,
+ 		wpa_supplicant_state_txt(wpa_s->wpa_state),
+ 		wpa_supplicant_state_txt(state));
+ 
++#ifdef CONFIG_FORCE_DHCP_RENEW
++	/*
++	 * On Win98 we have no correctly assigned IP address after
++	 * connection complete. A call to renew is required, but it doesn't
++	 * happen automatically. We will try to automate this by making
++	 * call to renew here. Also, on Win98 we have empty interface
++	 * names, so let's renew them all.
++	 */
++	if (state == WPA_COMPLETED && old_state != WPA_COMPLETED && LOBYTE(LOWORD(GetVersion())) < 5) {
++		ULONG info_len = 0;
++		if (GetInterfaceInfo(NULL, &info_len) == ERROR_INSUFFICIENT_BUFFER) {
++			PIP_INTERFACE_INFO info = os_malloc(info_len);
++			if (GetInterfaceInfo(info, &info_len) == NO_ERROR) {
++				LONG index;
++				for (index = 0; index < info->NumAdapters; ++index) {
++					size_t i;
++					char name[128];
++					for (i = 0; i < sizeof(name); ++i) {
++						name[i] = *((char*)(&(info->Adapter[index].Name[i])));
++						if (name[i] == '\0')
++							break;
++						else if (!isprint(name[i]))
++							name[i] = '_';
++					}
++
++					if (IpReleaseAddress(&info->Adapter[index]) == NO_ERROR) {
++						wpa_printf(MSG_DEBUG, "DHCP_RENEW: IP release succeeded "
++						           "for Name=%s, Index=%ld",
++						           name, info->Adapter[index].Index);
++					} else {
++						wpa_printf(MSG_DEBUG, "DHCP_RENEW: IP release failed "
++						           "for Name=%s, Index=%ld",
++						           name, info->Adapter[index].Index);
++					}
++
++					if (IpRenewAddress(&info->Adapter[index]) == NO_ERROR) {
++						wpa_printf(MSG_DEBUG, "DHCP_RENEW: IP renew succeeded "
++						           "for Name=%s, Index=%ld",
++						           name, info->Adapter[index].Index);
++					} else {
++						wpa_printf(MSG_DEBUG, "DHCP_RENEW: IP renew failed "
++						           "for Name=%s, Index=%ld",
++						           name, info->Adapter[index].Index);
++					}
++				}
++			} else {
++				wpa_printf(MSG_DEBUG, "DHCP_RENEW: GetInterfaceInfo failed");
++			}
++			os_free(info);
++		} else {
++			wpa_printf(MSG_DEBUG, "DHCP_RENEW: GetInterfaceInfo failed");
++		}
++	}
++#endif /* CONFIG_FORCE_DHCP_RENEW */
++
+ 	if (state == WPA_COMPLETED &&
+ 	    os_reltime_initialized(&wpa_s->roam_start)) {
+ 		os_reltime_age(&wpa_s->roam_start, &wpa_s->roam_time);
+-- 
+2.30.2
+

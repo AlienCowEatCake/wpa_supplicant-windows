@@ -1,16 +1,15 @@
-From f48ba826fc3765e78b303af6cc38266f4608ea79 Mon Sep 17 00:00:00 2001
+From 32d8511e9306db76470f23fab2e59adbfdeab44a Mon Sep 17 00:00:00 2001
 From: Peter Zhigalov <peter.zhigalov@gmail.com>
 Date: Sat, 29 Oct 2022 03:37:12 +0700
-Subject: [PATCH 7/8] Add experimental standalone mode
+Subject: [PATCH 5/5] Add experimental standalone mode
 
 ---
  src/drivers/ndis_events.c                 |   2 +
- src/utils/wpa_debug.h                     |   8 +
  wpa_supplicant/main_winsvc.c              |  11 +-
  wpa_supplicant/wpa_gui-qt4/standalone.cpp | 415 ++++++++++++++++++++++
  wpa_supplicant/wpa_gui-qt4/standalone.h   |  60 ++++
  wpa_supplicant/wpa_gui-qt4/wpagui.cpp     |  25 ++
- 6 files changed, 520 insertions(+), 1 deletion(-)
+ 5 files changed, 512 insertions(+), 1 deletion(-)
  create mode 100644 wpa_supplicant/wpa_gui-qt4/standalone.cpp
  create mode 100644 wpa_supplicant/wpa_gui-qt4/standalone.h
 
@@ -33,34 +32,6 @@ index 93673a3..b8cc905 100644
  	}
  
  	if (wmi_first) {
-diff --git a/src/utils/wpa_debug.h b/src/utils/wpa_debug.h
-index 7badba5..b062d13 100644
---- a/src/utils/wpa_debug.h
-+++ b/src/utils/wpa_debug.h
-@@ -26,7 +26,11 @@ enum {
- #ifdef CONFIG_NO_STDOUT_DEBUG
- 
- #define wpa_debug_print_timestamp() do { } while (0)
-+#ifdef _MSC_VER
-+#define wpa_printf(args, ...) do { } while (0)
-+#else
- #define wpa_printf(args...) do { } while (0)
-+#endif
- #define wpa_hexdump(l,t,b,le) do { } while (0)
- #define wpa_hexdump_buf(l,t,b) do { } while (0)
- #define wpa_hexdump_key(l,t,b,le) do { } while (0)
-@@ -36,7 +40,11 @@ enum {
- #define wpa_debug_open_file(p) do { } while (0)
- #define wpa_debug_close_file() do { } while (0)
- #define wpa_debug_setup_stdout() do { } while (0)
-+#ifdef _MSC_VER
-+#define wpa_dbg(args, ...) do { } while (0)
-+#else
- #define wpa_dbg(args...) do { } while (0)
-+#endif
- 
- static inline int wpa_debug_reopen_file(void)
- {
 diff --git a/wpa_supplicant/main_winsvc.c b/wpa_supplicant/main_winsvc.c
 index 8211097..816d67b 100644
 --- a/wpa_supplicant/main_winsvc.c
