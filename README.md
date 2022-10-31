@@ -33,6 +33,7 @@ Run requirements:
 
 ## Screenshots
 ![Win98](img/win98.png)
+![Win2k](img/win2k.png)
 
 ## Links
 * wpa_supplicant homepage: <https://w1.fi/wpa_supplicant/>
