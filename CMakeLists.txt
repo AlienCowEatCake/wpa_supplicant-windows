@@ -287,13 +287,15 @@ target_link_libraries(
     wpcap
 )
 add_dependencies(win_if_list headers)
-set_property(
-    TARGET
-    win_if_list
-    PROPERTY
-    MSVC_RUNTIME_LIBRARY
-    "MultiThreaded$<$<CONFIG:Debug>:Debug>"
-)
+if(WPAS_STATIC_RUNTIME)
+    set_property(
+        TARGET
+        win_if_list
+        PROPERTY
+        MSVC_RUNTIME_LIBRARY
+        "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+    )
+endif()
 
 add_executable(
     wpa_cli
