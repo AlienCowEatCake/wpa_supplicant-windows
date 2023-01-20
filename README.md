@@ -2,7 +2,7 @@
 
 ## Description
 
-wpa_supplicant has support for being used as a WPA/WPA2/IEEE 802.1X Supplicant on Windows. Last official build for Windows 98 was [0.4.11](http://w1.fi/releases/wpa_supplicant-windows-bin-0.4.11.zip) (2008-12-03) and last official build for Windows 2000 and later was [0.7.3](http://w1.fi/releases/wpa_supplicant-0.7.3.exe) (2010-09-07). This port aims to restore functionality of modern versions of wpa_supplicant on older versions of Windows such as Windows 98, Windows 2000, Windows XP SP2, etc.
+wpa_supplicant has support for being used as a WPA/WPA2/IEEE 802.1X Supplicant on Windows. Last official build for Windows 98 was [0.4.11](https://w1.fi/releases/wpa_supplicant-windows-bin-0.4.11.zip) (2008-12-03) and last official build for Windows 2000 and later was [0.7.3](https://w1.fi/releases/wpa_supplicant-0.7.3.exe) (2010-09-07). This port aims to restore functionality of modern versions of wpa_supplicant on older versions of Windows such as Windows 98, Windows 2000, Windows XP SP1, etc.
 
 Currently, there are several different build configurations with different features.
 
@@ -37,7 +37,7 @@ Run requirements:
 
 ## Links
 * wpa_supplicant homepage: <https://w1.fi/wpa_supplicant/>
-* wpa_supplicant releases page: <http://w1.fi/releases/>
+* wpa_supplicant releases page: <https://w1.fi/releases/>
 * WinPcap homepage: <https://www.winpcap.org/>
 * WinPcap archive page: <https://www.winpcap.org/archive/>
-* "Does wpa_supplicant work on Win98?" mailing list thread: <http://lists.infradead.org/pipermail/hostap/2008-July/018043.html>
+* "Does wpa_supplicant work on Win98?" mailing list thread: <https://lists.infradead.org/pipermail/hostap/2008-July/018043.html>
