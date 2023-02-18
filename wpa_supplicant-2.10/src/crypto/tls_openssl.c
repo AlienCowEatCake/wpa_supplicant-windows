@@ -349,8 +349,7 @@ static X509_STORE * tls_crl_cert_reload(const char *ca_cert, int check_crl)
 }
 
 
-/*#ifdef CONFIG_NATIVE_WINDOWS*/
-#if 0
+#ifdef CONFIG_NATIVE_WINDOWS
 
 /* Windows CryptoAPI and access to certificate stores */
 #include <wincrypt.h>
@@ -365,6 +364,10 @@ static X509_STORE * tls_crl_cert_reload(const char *ca_cert, int check_crl)
 #define CERT_STORE_OPEN_EXISTING_FLAG 0x00004000
 
 #endif /* __MINGW32_VERSION */
+
+#ifndef RSA_F_RSA_EAY_PRIVATE_ENCRYPT
+#define RSA_F_RSA_EAY_PRIVATE_ENCRYPT RSA_F_RSA_OSSL_PRIVATE_ENCRYPT
+#endif
 
 
 struct cryptoapi_rsa_data {
@@ -401,8 +404,14 @@ static int cryptoapi_rsa_pub_dec(int flen, const unsigned char *from,
 static int cryptoapi_rsa_priv_enc(int flen, const unsigned char *from,
 				  unsigned char *to, RSA *rsa, int padding)
 {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	struct cryptoapi_rsa_data *priv =
 		(struct cryptoapi_rsa_data *) rsa->meth->app_data;
+#else
+	const RSA_METHOD *meth = RSA_get_method(rsa);
+	struct cryptoapi_rsa_data *priv =
+		(struct cryptoapi_rsa_data *) RSA_meth_get0_app_data(meth);
+#endif
 	HCRYPTHASH hash;
 	DWORD hash_size, len, i;
 	unsigned char *buf = NULL;
@@ -499,9 +508,17 @@ static void cryptoapi_free_data(struct cryptoapi_rsa_data *priv)
 
 static int cryptoapi_finish(RSA *rsa)
 {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	cryptoapi_free_data((struct cryptoapi_rsa_data *) rsa->meth->app_data);
 	os_free((void *) rsa->meth);
 	rsa->meth = NULL;
+#else
+	const RSA_METHOD *meth = RSA_get_method(rsa);
+	struct cryptoapi_rsa_data *priv =
+		(struct cryptoapi_rsa_data *) RSA_meth_get0_app_data(meth);
+	cryptoapi_free_data(priv);
+	RSA_meth_set0_app_data(meth, NULL);
+#endif
 	return 1;
 }
 
@@ -558,6 +575,9 @@ static int tls_cryptoapi_cert(SSL *ssl, const char *name)
 	RSA *rsa = NULL, *pub_rsa;
 	struct cryptoapi_rsa_data *priv;
 	RSA_METHOD *rsa_meth;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	const BIGNUM *n = NULL, *e = NULL, *d = NULL;
+#endif
 
 	if (name == NULL ||
 	    (strncmp(name, "cert://", 7) != 0 &&
@@ -565,12 +585,21 @@ static int tls_cryptoapi_cert(SSL *ssl, const char *name)
 		return -1;
 
 	priv = os_zalloc(sizeof(*priv));
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	rsa_meth = os_zalloc(sizeof(*rsa_meth));
+#else
+	rsa_meth = RSA_meth_new("Microsoft CryptoAPI RSA Method", RSA_METHOD_FLAG_NO_CHECK);
+#endif
 	if (priv == NULL || rsa_meth == NULL) {
 		wpa_printf(MSG_WARNING, "CryptoAPI: Failed to allocate memory "
 			   "for CryptoAPI RSA method");
 		os_free(priv);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		os_free(rsa_meth);
+#else
+		if (rsa_meth != NULL)
+			RSA_meth_free(rsa_meth);
+#endif
 		return -1;
 	}
 
@@ -604,6 +633,7 @@ static int tls_cryptoapi_cert(SSL *ssl, const char *name)
 		goto err;
 	}
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	rsa_meth->name = "Microsoft CryptoAPI RSA Method";
 	rsa_meth->rsa_pub_enc = cryptoapi_rsa_pub_enc;
 	rsa_meth->rsa_pub_dec = cryptoapi_rsa_pub_dec;
@@ -612,6 +642,14 @@ static int tls_cryptoapi_cert(SSL *ssl, const char *name)
 	rsa_meth->finish = cryptoapi_finish;
 	rsa_meth->flags = RSA_METHOD_FLAG_NO_CHECK;
 	rsa_meth->app_data = (char *) priv;
+#else
+	RSA_meth_set_pub_enc(rsa_meth, cryptoapi_rsa_pub_enc);
+	RSA_meth_set_pub_dec(rsa_meth, cryptoapi_rsa_pub_dec);
+	RSA_meth_set_priv_enc(rsa_meth, cryptoapi_rsa_priv_enc);
+	RSA_meth_set_priv_dec(rsa_meth, cryptoapi_rsa_priv_dec);
+	RSA_meth_set_finish(rsa_meth, cryptoapi_finish);
+	RSA_meth_set0_app_data(rsa_meth, (void *) priv);
+#endif
 
 	rsa = RSA_new();
 	if (rsa == NULL) {
@@ -625,12 +663,22 @@ static int tls_cryptoapi_cert(SSL *ssl, const char *name)
 		rsa = NULL;
 		goto err;
 	}
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	pub_rsa = cert->cert_info->key->pkey->pkey.rsa;
+#else
+	pub_rsa = EVP_PKEY_get0_RSA(X509_get0_pubkey(cert));
+#endif
 	X509_free(cert);
 	cert = NULL;
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	rsa->n = BN_dup(pub_rsa->n);
 	rsa->e = BN_dup(pub_rsa->e);
+#else
+	RSA_get0_key(pub_rsa, &n, &e, &d);
+	if (!RSA_set0_key(rsa, BN_dup(n), BN_dup(e), BN_dup(d)))
+		goto err;
+#endif
 	if (!RSA_set_method(rsa, rsa_meth))
 		goto err;
 
@@ -646,7 +694,11 @@ err:
 	if (rsa)
 		RSA_free(rsa);
 	else {
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 		os_free(rsa_meth);
+#else
+		RSA_meth_free(rsa_meth);
+#endif
 		cryptoapi_free_data(priv);
 	}
 	return -1;
@@ -2795,8 +2847,7 @@ static int tls_connection_ca_cert(struct tls_data *data,
 	}
 #endif /* ANDROID */
 
-/*#ifdef CONFIG_NATIVE_WINDOWS*/
-#if 0
+#ifdef CONFIG_NATIVE_WINDOWS
 	if (ca_cert && tls_cryptoapi_ca_cert(ssl_ctx, conn->ssl, ca_cert) ==
 	    0) {
 		wpa_printf(MSG_DEBUG, "OpenSSL: Added CA certificates from "

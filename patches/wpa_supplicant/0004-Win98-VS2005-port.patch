@@ -1,12 +1,12 @@
-From cf853e19d084f23e697322db867753423bb3a13f Mon Sep 17 00:00:00 2001
+From 87fb5ee8f6927753027b966fb5fb18623390cf28 Mon Sep 17 00:00:00 2001
 From: Peter Zhigalov <peter.zhigalov@gmail.com>
-Date: Tue, 25 Oct 2022 04:48:46 +0700
+Date: Sat, 18 Feb 2023 22:50:52 +0700
 Subject: [PATCH 4/5] Win98/VS2005 port
 
 ---
  src/common/sae_pk.c                           |   2 +
  src/common/wpa_ctrl.c                         |   2 +-
- src/crypto/tls_openssl.c                      |   6 +-
+ src/crypto/tls_openssl.c                      |  53 +++++
  src/drivers/driver_ndis.c                     |  16 +-
  src/l2_packet/l2_packet_winpcap.c             |  55 ++++-
  src/pae/ieee802_1x_kay.c                      | 102 ++++----
@@ -62,7 +62,7 @@ Subject: [PATCH 4/5] Win98/VS2005 port
  wpa_supplicant/wpa_gui-qt4/wpagui.cpp         | 117 ++++++++--
  wpa_supplicant/wpa_gui-qt4/wpagui.h           |   8 +
  wpa_supplicant/wpa_supplicant.c               |  58 +++++
- 58 files changed, 1611 insertions(+), 307 deletions(-)
+ 58 files changed, 1660 insertions(+), 305 deletions(-)
  create mode 100644 src/utils/inet_ntop.h
  create mode 100644 src/utils/inet_pton.h
  create mode 100644 wpa_supplicant/wpa_gui-qt4/icons/ap.png
@@ -107,29 +107,143 @@ index 40a9795..c593082 100644
  		    ctrl->remote_ip, ctrl->remote_ifname);
  	return ps;
 diff --git a/src/crypto/tls_openssl.c b/src/crypto/tls_openssl.c
-index ad3aa1a..c41d8b0 100644
+index ad3aa1a..23e0059 100644
 --- a/src/crypto/tls_openssl.c
 +++ b/src/crypto/tls_openssl.c
-@@ -349,7 +349,8 @@ static X509_STORE * tls_crl_cert_reload(const char *ca_cert, int check_crl)
+@@ -365,6 +365,10 @@ static X509_STORE * tls_crl_cert_reload(const char *ca_cert, int check_crl)
+ 
+ #endif /* __MINGW32_VERSION */
+ 
++#ifndef RSA_F_RSA_EAY_PRIVATE_ENCRYPT
++#define RSA_F_RSA_EAY_PRIVATE_ENCRYPT RSA_F_RSA_OSSL_PRIVATE_ENCRYPT
++#endif
++
+ 
+ struct cryptoapi_rsa_data {
+ 	const CERT_CONTEXT *cert;
+@@ -400,8 +404,14 @@ static int cryptoapi_rsa_pub_dec(int flen, const unsigned char *from,
+ static int cryptoapi_rsa_priv_enc(int flen, const unsigned char *from,
+ 				  unsigned char *to, RSA *rsa, int padding)
+ {
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 	struct cryptoapi_rsa_data *priv =
+ 		(struct cryptoapi_rsa_data *) rsa->meth->app_data;
++#else
++	const RSA_METHOD *meth = RSA_get_method(rsa);
++	struct cryptoapi_rsa_data *priv =
++		(struct cryptoapi_rsa_data *) RSA_meth_get0_app_data(meth);
++#endif
+ 	HCRYPTHASH hash;
+ 	DWORD hash_size, len, i;
+ 	unsigned char *buf = NULL;
+@@ -498,9 +508,17 @@ static void cryptoapi_free_data(struct cryptoapi_rsa_data *priv)
+ 
+ static int cryptoapi_finish(RSA *rsa)
+ {
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 	cryptoapi_free_data((struct cryptoapi_rsa_data *) rsa->meth->app_data);
+ 	os_free((void *) rsa->meth);
+ 	rsa->meth = NULL;
++#else
++	const RSA_METHOD *meth = RSA_get_method(rsa);
++	struct cryptoapi_rsa_data *priv =
++		(struct cryptoapi_rsa_data *) RSA_meth_get0_app_data(meth);
++	cryptoapi_free_data(priv);
++	RSA_meth_set0_app_data(meth, NULL);
++#endif
+ 	return 1;
  }
  
+@@ -557,6 +575,9 @@ static int tls_cryptoapi_cert(SSL *ssl, const char *name)
+ 	RSA *rsa = NULL, *pub_rsa;
+ 	struct cryptoapi_rsa_data *priv;
+ 	RSA_METHOD *rsa_meth;
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
++	const BIGNUM *n = NULL, *e = NULL, *d = NULL;
++#endif
  
--#ifdef CONFIG_NATIVE_WINDOWS
-+/*#ifdef CONFIG_NATIVE_WINDOWS*/
-+#if 0
+ 	if (name == NULL ||
+ 	    (strncmp(name, "cert://", 7) != 0 &&
+@@ -564,12 +585,21 @@ static int tls_cryptoapi_cert(SSL *ssl, const char *name)
+ 		return -1;
  
- /* Windows CryptoAPI and access to certificate stores */
- #include <wincrypt.h>
-@@ -2794,7 +2795,8 @@ static int tls_connection_ca_cert(struct tls_data *data,
+ 	priv = os_zalloc(sizeof(*priv));
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 	rsa_meth = os_zalloc(sizeof(*rsa_meth));
++#else
++	rsa_meth = RSA_meth_new("Microsoft CryptoAPI RSA Method", RSA_METHOD_FLAG_NO_CHECK);
++#endif
+ 	if (priv == NULL || rsa_meth == NULL) {
+ 		wpa_printf(MSG_WARNING, "CryptoAPI: Failed to allocate memory "
+ 			   "for CryptoAPI RSA method");
+ 		os_free(priv);
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 		os_free(rsa_meth);
++#else
++		if (rsa_meth != NULL)
++			RSA_meth_free(rsa_meth);
++#endif
+ 		return -1;
  	}
- #endif /* ANDROID */
  
--#ifdef CONFIG_NATIVE_WINDOWS
-+/*#ifdef CONFIG_NATIVE_WINDOWS*/
-+#if 0
- 	if (ca_cert && tls_cryptoapi_ca_cert(ssl_ctx, conn->ssl, ca_cert) ==
- 	    0) {
- 		wpa_printf(MSG_DEBUG, "OpenSSL: Added CA certificates from "
+@@ -603,6 +633,7 @@ static int tls_cryptoapi_cert(SSL *ssl, const char *name)
+ 		goto err;
+ 	}
+ 
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 	rsa_meth->name = "Microsoft CryptoAPI RSA Method";
+ 	rsa_meth->rsa_pub_enc = cryptoapi_rsa_pub_enc;
+ 	rsa_meth->rsa_pub_dec = cryptoapi_rsa_pub_dec;
+@@ -611,6 +642,14 @@ static int tls_cryptoapi_cert(SSL *ssl, const char *name)
+ 	rsa_meth->finish = cryptoapi_finish;
+ 	rsa_meth->flags = RSA_METHOD_FLAG_NO_CHECK;
+ 	rsa_meth->app_data = (char *) priv;
++#else
++	RSA_meth_set_pub_enc(rsa_meth, cryptoapi_rsa_pub_enc);
++	RSA_meth_set_pub_dec(rsa_meth, cryptoapi_rsa_pub_dec);
++	RSA_meth_set_priv_enc(rsa_meth, cryptoapi_rsa_priv_enc);
++	RSA_meth_set_priv_dec(rsa_meth, cryptoapi_rsa_priv_dec);
++	RSA_meth_set_finish(rsa_meth, cryptoapi_finish);
++	RSA_meth_set0_app_data(rsa_meth, (void *) priv);
++#endif
+ 
+ 	rsa = RSA_new();
+ 	if (rsa == NULL) {
+@@ -624,12 +663,22 @@ static int tls_cryptoapi_cert(SSL *ssl, const char *name)
+ 		rsa = NULL;
+ 		goto err;
+ 	}
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 	pub_rsa = cert->cert_info->key->pkey->pkey.rsa;
++#else
++	pub_rsa = EVP_PKEY_get0_RSA(X509_get0_pubkey(cert));
++#endif
+ 	X509_free(cert);
+ 	cert = NULL;
+ 
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 	rsa->n = BN_dup(pub_rsa->n);
+ 	rsa->e = BN_dup(pub_rsa->e);
++#else
++	RSA_get0_key(pub_rsa, &n, &e, &d);
++	if (!RSA_set0_key(rsa, BN_dup(n), BN_dup(e), BN_dup(d)))
++		goto err;
++#endif
+ 	if (!RSA_set_method(rsa, rsa_meth))
+ 		goto err;
+ 
+@@ -645,7 +694,11 @@ err:
+ 	if (rsa)
+ 		RSA_free(rsa);
+ 	else {
++#if OPENSSL_VERSION_NUMBER < 0x10100000L
+ 		os_free(rsa_meth);
++#else
++		RSA_meth_free(rsa_meth);
++#endif
+ 		cryptoapi_free_data(priv);
+ 	}
+ 	return -1;
 diff --git a/src/drivers/driver_ndis.c b/src/drivers/driver_ndis.c
 index b32e009..da0f28b 100644
 --- a/src/drivers/driver_ndis.c
