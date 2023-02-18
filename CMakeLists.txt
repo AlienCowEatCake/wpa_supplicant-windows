@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 project(wpa-supplicant VERSION 2.10 LANGUAGES C CXX)
-set(PORT_REVISION "R20221031")
+set(PORT_REVISION "R20230218")
 
 option(WPAS_STATIC_RUNTIME "Use static MSVC runtime library" OFF)
 option(WPAS_EXCLUDE_SVG_ICONS "Exclude SVG icon resources" OFF)
