@@ -1,5 +1,5 @@
 @echo off
-set OPENSSL_SRC=openssl-1.1.1q
+set OPENSSL_SRC=openssl-1.1.1t
 set OPENSSL_DST=openssl-1.1.1-x86
 
 call "%ProgramFiles(x86)%\Microsoft Visual Studio 8\VC\vcvarsall.bat" x86

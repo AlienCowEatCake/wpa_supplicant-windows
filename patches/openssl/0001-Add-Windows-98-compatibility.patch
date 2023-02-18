@@ -1,4 +1,4 @@
-From 7741ed8e31a74db2853ef56ca992880844de2c47 Mon Sep 17 00:00:00 2001
+From 09dc14129a28c806486b474951e16b18d0177867 Mon Sep 17 00:00:00 2001
 From: Peter Zhigalov <peter.zhigalov@gmail.com>
 Date: Mon, 24 Oct 2022 01:00:35 +0700
 Subject: [PATCH] Add Windows 98 compatibility
@@ -11,10 +11,10 @@ Subject: [PATCH] Add Windows 98 compatibility
  4 files changed, 46 insertions(+), 4 deletions(-)
 
 diff --git a/Configurations/10-main.conf b/Configurations/10-main.conf
-index 2fcb96a047..5196579673 100644
+index f815a09b23..6d8b778590 100644
 --- a/Configurations/10-main.conf
 +++ b/Configurations/10-main.conf
-@@ -1242,7 +1242,6 @@ my %targets = (
+@@ -1249,7 +1249,6 @@ my %targets = (
          LDFLAGS          => add("/debug"),
          coutflag         => "/Fo",
          defines          => add("OPENSSL_SYS_WIN32", "WIN32_LEAN_AND_MEAN",
@@ -22,7 +22,7 @@ index 2fcb96a047..5196579673 100644
                                  "_CRT_SECURE_NO_DEPRECATE",
                                  "_WINSOCK_DEPRECATED_NO_WARNINGS"),
          lib_cflags       => add("/Zi /Fdossl_static.pdb"),
-@@ -1402,7 +1401,7 @@ my %targets = (
+@@ -1409,7 +1408,7 @@ my %targets = (
                                     debug   => "-g -O0",
                                     release => "-O3 -fomit-frame-pointer"),
          cflags           => "-m32",
@@ -31,7 +31,7 @@ index 2fcb96a047..5196579673 100644
                                      threads("-D_MT")),
          lib_cppflags     => "-DL_ENDIAN",
          sys_id           => "MINGW32",
-@@ -1438,7 +1437,7 @@ my %targets = (
+@@ -1445,7 +1444,7 @@ my %targets = (
                                     debug   => "-g -O0",
                                     release => "-O3"),
          cflags           => "-m64",
@@ -71,10 +71,10 @@ index 0af7a330bc..cc07faa7dc 100644
  static CRYPTO_ONCE bio_lookup_init = CRYPTO_ONCE_STATIC_INIT;
  
 diff --git a/crypto/rand/rand_win.c b/crypto/rand/rand_win.c
-index 9036546008..78986488b0 100644
+index cdcd70103d..2ce508963c 100644
 --- a/crypto/rand/rand_win.c
 +++ b/crypto/rand/rand_win.c
-@@ -116,6 +116,23 @@ size_t rand_pool_acquire_entropy(RAND_POOL *pool)
+@@ -118,6 +118,23 @@ size_t rand_pool_acquire_entropy(RAND_POOL *pool)
          return entropy_available;
  # endif
  
