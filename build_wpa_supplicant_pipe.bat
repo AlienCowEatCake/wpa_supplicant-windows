@@ -1,8 +1,8 @@
 @echo off
 set VCVARS_ARCH=x86
 set "VCVARS=%VS80COMNTOOLS%\..\..\VC\vcvarsall.bat"
-set QTDIR=C:\Qt\4.4.3\msvc2005_static_lite01
-set CMAKEDIR="%ProgramFiles%\CMake"
+if "x%QTDIR%x" == "xx" set QTDIR=C:\Qt\4.4.3\msvc2005_static_lite01
+if "x%CMAKEDIR%x" == "xx" set CMAKEDIR="%ProgramFiles%\CMake"
 set IFACE=pipe
 set BUILDDIR=build_%IFACE%
 
@@ -18,4 +18,4 @@ cmake --build . --config Release --target all
 cpack -D CPACK_OUTPUT_FILE_PREFIX="%~dp0\."
 
 cd "%~dp0"
-pause
+if NOT "%CI%" == "true" pause

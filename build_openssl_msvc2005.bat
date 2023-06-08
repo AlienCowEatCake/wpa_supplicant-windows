@@ -23,4 +23,4 @@ rmdir /s /q "%BUILDDIR%\share"
 rmdir /s /q "%BUILDDIR%\lib\pkgconfig"
 rmdir /s /q "%BUILDDIR%\lib\engines-1_1"
 
-pause
+if NOT "%CI%" == "true" pause
