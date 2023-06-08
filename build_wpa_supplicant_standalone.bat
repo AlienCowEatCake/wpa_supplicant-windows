@@ -1,6 +1,6 @@
 @echo off
 set VCVARS_ARCH=x86
-set "VCVARS%VS80COMNTOOLS%\..\..\VC\vcvarsall.bat"
+set "VCVARS=%VS80COMNTOOLS%\..\..\VC\vcvarsall.bat"
 set QTDIR=C:\Qt\4.4.3\msvc2005_static_lite01
 set CMAKEDIR="%ProgramFiles%\CMake"
 set IFACE=standalone
