@@ -2,7 +2,7 @@
 set OPENSSL_SRC=openssl-1.1.1u
 set OPENSSL_DST=openssl-1.1.1-x86
 
-call "%ProgramFiles(x86)%\Microsoft Visual Studio 8\VC\vcvarsall.bat" x86
+call "%VS80COMNTOOLS%\..\..\VC\vcvarsall.bat" x86
 set PATH=%PATH%;C:\Perl64\bin;C:\Strawberry\perl\bin
 
 cd "%~dp0"
