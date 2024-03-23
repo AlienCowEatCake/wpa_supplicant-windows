@@ -1,8 +1,6 @@
-From 513ca4b1c3a9a3bed2e40bc3f4ac816029faccf9 Mon Sep 17 00:00:00 2001
 From: James Ralston <ralston@pobox.com>
 Date: Sun, 1 May 2022 16:15:23 -0700
-Subject: [PATCH 3/3] Allow legacy renegotiation to fix PEAP issues with some
- servers
+Subject: Allow legacy renegotiation to fix PEAP issues with some servers
 
 Upstream: http://lists.infradead.org/pipermail/hostap/2022-May/040511.html
 ---
@@ -30,6 +28,3 @@ index 273e5cb..ad3aa1a 100644
  	SSL_CTX_set_mode(ssl, SSL_MODE_AUTO_RETRY);
  
  #ifdef SSL_MODE_NO_AUTO_CHAIN
--- 
-2.30.2
-

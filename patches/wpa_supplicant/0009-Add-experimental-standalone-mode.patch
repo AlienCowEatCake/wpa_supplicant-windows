@@ -1,7 +1,7 @@
-From 49904027625fea1e71e9f816433b5032fa484331 Mon Sep 17 00:00:00 2001
+From f486b55509c65b1a15a7b3fadcc29f10a8949f58 Mon Sep 17 00:00:00 2001
 From: Peter Zhigalov <peter.zhigalov@gmail.com>
 Date: Sat, 29 Oct 2022 03:37:12 +0700
-Subject: [PATCH 5/5] Add experimental standalone mode
+Subject: [PATCH 9/9] Add experimental standalone mode
 
 ---
  src/drivers/ndis_events.c                 |   2 +
@@ -736,5 +736,5 @@ index ef2a947..c5aac33 100644
  
  void WpaGui::addToStartup()
 -- 
-2.30.2
+2.39.2
 

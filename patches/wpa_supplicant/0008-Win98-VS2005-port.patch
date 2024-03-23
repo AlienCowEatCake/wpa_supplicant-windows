@@ -1,7 +1,7 @@
-From 87fb5ee8f6927753027b966fb5fb18623390cf28 Mon Sep 17 00:00:00 2001
+From d170e8df53c2d042733809f1a1ba48ad87faebab Mon Sep 17 00:00:00 2001
 From: Peter Zhigalov <peter.zhigalov@gmail.com>
 Date: Sat, 18 Feb 2023 22:50:52 +0700
-Subject: [PATCH 4/5] Win98/VS2005 port
+Subject: [PATCH 8/9] Win98/VS2005 port
 
 ---
  src/common/sae_pk.c                           |   2 +
@@ -3879,7 +3879,7 @@ index f0a34c9..05b9b11 100644
  
  	QAction *addInterfaceAction;
 diff --git a/wpa_supplicant/wpa_supplicant.c b/wpa_supplicant/wpa_supplicant.c
-index d37a994..d6f5114 100644
+index 917aca4..389d2c1 100644
 --- a/wpa_supplicant/wpa_supplicant.c
 +++ b/wpa_supplicant/wpa_supplicant.c
 @@ -15,6 +15,9 @@
@@ -3955,5 +3955,5 @@ index d37a994..d6f5114 100644
  	    os_reltime_initialized(&wpa_s->roam_start)) {
  		os_reltime_age(&wpa_s->roam_start, &wpa_s->roam_time);
 -- 
-2.30.2
+2.39.2
 

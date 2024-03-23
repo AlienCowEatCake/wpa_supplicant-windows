@@ -1,7 +1,6 @@
-From d1f53bb36c82ce708f81d531b6cb850e260575f9 Mon Sep 17 00:00:00 2001
 From: Beniamino Galvani <bgalvani@redhat.com>
 Date: Mon, 4 Apr 2022 09:13:12 +0200
-Subject: [PATCH 2/3] AP: guard FT-SAE code with CONFIG_IEEE80211R_AP
+Subject: AP: guard FT-SAE code with CONFIG_IEEE80211R_AP
 
 wpa_supplicant doesn't support FT in AP mode, but it still negotiates
 FT-SAE. This can lead to an authentication failure when the AP is
@@ -55,6 +54,3 @@ index 524922e..d63cbeb 100644
  #endif /* CONFIG_SAE */
  	else if (key_mgmt & WPA_KEY_MGMT_IEEE8021X)
  		sm->wpa_key_mgmt = WPA_KEY_MGMT_IEEE8021X;
--- 
-2.30.2
-
