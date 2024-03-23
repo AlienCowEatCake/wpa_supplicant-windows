@@ -4,6 +4,8 @@
 
 wpa_supplicant has support for being used as a WPA/WPA2/IEEE 802.1X Supplicant on Windows. Last official build for Windows 98 was [0.4.11](https://w1.fi/releases/wpa_supplicant-windows-bin-0.4.11.zip) (2008-12-03) and last official build for Windows 2000 and later was [0.7.3](https://w1.fi/releases/wpa_supplicant-0.7.3.exe) (2010-09-07). This port aims to restore functionality of modern versions of wpa_supplicant on older versions of Windows such as Windows 98, Windows 2000, Windows XP SP1, etc.
 
+> **:warning:** This port is designed for old versions of Windows and incompatible with Windows Vista and newer.
+
 Currently, there are several different build configurations with different features.
 
 Builds with `WPAS_CTRL_IFACE=pipe`:
