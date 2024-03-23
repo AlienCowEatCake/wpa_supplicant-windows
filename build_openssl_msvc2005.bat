@@ -1,5 +1,5 @@
 @echo off
-set OPENSSL_SRC=openssl-1.1.1u
+set OPENSSL_SRC=openssl-1.1.1w
 set OPENSSL_DST=openssl-1.1.1-x86
 
 call "%VS80COMNTOOLS%\..\..\VC\vcvarsall.bat" x86
